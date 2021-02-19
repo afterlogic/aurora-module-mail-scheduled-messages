@@ -1,5 +1,5 @@
 {
-	"name": "afterlogic/aurora-module-mail-scheduled-messages,
+	"name": "afterlogic/aurora-module-mail-scheduled-messages",
 	"type": "aurora-module",
 	"require": {
 		"php": ">=5.4.0",
