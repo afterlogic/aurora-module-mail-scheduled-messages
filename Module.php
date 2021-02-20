@@ -80,6 +80,13 @@ class Module extends \Aurora\System\Module\AbstractModule
 		}
 	}
 
+	public function GetSettings()
+	{
+		return [
+			'PredefinedSchedule' => $this->getConfig('PredefinedSchedule', [])
+		];
+	}
+
 	public function SaveScheduledMessage(
 		$AccountID,
 		$Fetcher = null,
