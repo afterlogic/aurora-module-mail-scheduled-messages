@@ -138,6 +138,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 			$CustomHeaders);
 		if ($oMessage)
 		{
+			$oMessage->SetDate($ScheduleDateTime);
 			$rMessageStream = \MailSo\Base\ResourceRegistry::CreateMemoryResource();
 			$iMessageStreamSize = \MailSo\Base\Utils::MultipleStreamWriter($oMessage->ToStream(true), array($rMessageStream), 8192, true, true, true);
 

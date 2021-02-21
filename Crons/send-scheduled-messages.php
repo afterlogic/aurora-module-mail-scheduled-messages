@@ -15,60 +15,151 @@ $oMailScheduledMessagesModule = \Aurora\Modules\MailScheduledMessages\Module::ge
 $oMailModule = \Aurora\Modules\Mail\Module::getInstance();
 
 $iTime = 1613685600; //time();
+
 $aMessagesForSend = $oMailScheduledMessagesModule->Decorator()->GetMessagesForSend($iTime);
 foreach ($aMessagesForSend as $aMessageForSend)
 {
+	$mSendResult = false;
 	$oAccount = $oMailModule->GetAccount($aMessageForSend['AccountId']);
 
 	if ($oMailModule->getMailManager()->directMessageToStream($oAccount,
-		function($rResource, $sContentType, $sFileName, $sMimeIndex = '') use ($oAccount, $oMailModule, $oMailScheduledMessagesModule, $aMessageForSend) {
-			if (\is_resource($rResource))
+		function ($rMessageResourse, $sContentType, $sFileName, $sMimeIndex = '') use ($oAccount, &$mSendResult) {
+			if (\is_resource($rMessageResourse))
 			{
-				$oMessage = $oMailModule->getMailManager()->getMessage($oAccount, $aMessageForSend['FolderFullName'], (int) $aMessageForSend['MessageUid']);
-				if ($oMessage)
-				{
-					$mSendResult = sendMessage($oAccount, $oMessage, $rResource);
-					if ($mSendResult)
-					{
-						$oMailModule->Decorator()->DeleteMessages($aMessageForSend['AccountId'], $aMessageForSend['FolderFullName'], [$aMessageForSend['MessageUid']]);
-						$oMailScheduledMessagesModule->Decorator()->RemoveMessage($aMessageForSend['AccountId'], $aMessageForSend['FolderFullName'], $aMessageForSend['MessageUid']);
-					}
-				}
+				$mSendResult = sendMessage($oAccount, $rMessageResourse);
 			}
 	}, $aMessageForSend['FolderFullName'], $aMessageForSend['MessageUid']))
 	{
-
-	}
-	else
-	{
-		$oMailScheduledMessagesModule->Decorator()->RemoveMessage($aMessageForSend['AccountId'], $aMessageForSend['FolderFullName'], $aMessageForSend['MessageUid']);
+		if ($mSendResult)
+		{
+			$oMailModule->Decorator()->MoveMessages($aMessageForSend['AccountId'], $aMessageForSend['FolderFullName'], 'Sent',$aMessageForSend['MessageUid']);
+			$oMailScheduledMessagesModule->Decorator()->RemoveMessage($aMessageForSend['AccountId'], $aMessageForSend['FolderFullName'], $aMessageForSend['MessageUid']);
+		}
 	}
 }
 
-function getRcpt($oMessage)
+function getRcpt($aHeaders)
 {
 	$oResult = \MailSo\Mime\EmailCollection::NewInstance();
-
-	$oResult->MergeWithOtherCollection($oMessage->To());
-	$oResult->MergeWithOtherCollection($oMessage->Cc());
-	$oResult->MergeWithOtherCollection($oMessage->Bcc());
+	if (isset($aHeaders['To']))
+	{
+		$oResult->MergeWithOtherCollection(
+			\MailSo\Mime\EmailCollection::NewInstance(\ltrim($aHeaders['To']))
+		);
+	}
+	if (isset($aHeaders['Cc']))
+	{
+		$oResult->MergeWithOtherCollection(
+			\MailSo\Mime\EmailCollection::NewInstance(\ltrim($aHeaders['Cc']))
+		);
+	}
+	if (isset($aHeaders['Bcc']))
+	{
+		$oResult->MergeWithOtherCollection(
+			\MailSo\Mime\EmailCollection::NewInstance(\ltrim($aHeaders['Bcc']))
+		);
+	}
 
 	return $oResult->Unique();
 }
 
-function sendMessage($oAccount, $oMessage, $rMessageStream)
+function getHeaders($rResource)
 {
-	if (!$oAccount || !$oMessage)
+	$sRawHeaders = '';
+    while (trim($line = fgets($rResource)) !== '')
+    {
+        $sRawHeaders .= $line;
+    }
+
+    $aHeaders = \explode("\n", \str_replace("\r", '', $sRawHeaders));
+
+    $sName = null;
+    $sValue = null;
+    $aResult = [];
+    foreach ($aHeaders as $sHeadersValue)
+    {
+        if (0 === strlen($sHeadersValue))
+        {
+            continue;
+        }
+
+        $sFirstChar = \substr($sHeadersValue, 0, 1);
+        if ($sFirstChar !== ' ' && $sFirstChar !== "\t" && false === \strpos($sHeadersValue, ':'))
+        {
+            continue;
+        }
+        else if (null !== $sName && ($sFirstChar === ' ' || $sFirstChar === "\t"))
+        {
+            $sValue = \is_null($sValue) ? '' : $sValue;
+
+            if ('?=' === \substr(\rtrim($sHeadersValue), -2))
+            {
+                $sHeadersValue = \rtrim($sHeadersValue);
+            }
+
+            if ('=?' === \substr(\ltrim($sHeadersValue), 0, 2))
+            {
+                $sHeadersValue = \ltrim($sHeadersValue);
+            }
+
+            if ('=?' === \substr($sHeadersValue, 0, 2))
+            {
+                $sValue .= $sHeadersValue;
+            }
+            else
+            {
+                $sValue .= "\n".$sHeadersValue;
+            }
+        }
+        else
+        {
+            if (null !== $sName)
+            {
+                $aResult[$sName] = $sValue;
+
+                $sName = null;
+                $sValue = null;
+            }
+
+            $aHeaderParts = \explode(':', $sHeadersValue, 2);
+            $sName = $aHeaderParts[0];
+            $sValue = isset($aHeaderParts[1]) ? $aHeaderParts[1] : '';
+
+            if ('?=' === \substr(\rtrim($sValue), -2))
+            {
+                $sValue = \rtrim($sValue);
+            }
+        }
+    }
+	if (null !== $sName)
+    {
+		$aResult[$sName] = $sValue;
+	}
+
+	return $aResult;
+}
+
+function sendMessage($oAccount, $rStream)
+{
+	if (!$oAccount || !$rStream)
 	{
 		throw new \Aurora\System\Exceptions\InvalidArgumentException();
 	}
 
+	$rMessageStream = \MailSo\Base\ResourceRegistry::CreateMemoryResource();
+
+	$iMessageStreamSize = \MailSo\Base\Utils::MultipleStreamWriter(
+		$rStream, array($rMessageStream), 8192, true, true, true);
+
+	$oMailModule = \Aurora\Modules\Mail\Module::getInstance();
 	$oImapClient =& $oMailModule->getMailManager()->_getImapClient($oAccount);
 
 	$mResult = false;
 	if (is_resource($rMessageStream))
 	{
-		$oRcpt = getRcpt($oMessage);
+		$aHeaders = getHeaders($rMessageStream);
+		$oRcpt = getRcpt($aHeaders);
+
 		if ($oRcpt && 0 < $oRcpt->Count())
 		{
 			$oServer = null;
@@ -118,6 +209,7 @@ function sendMessage($oAccount, $oMessage, $rMessageStream)
 					$oSmtpClient->Rcpt($sRcptEmail);
 				}
 
+				\rewind($rMessageStream);
 				$oSmtpClient->DataWithStream($rMessageStream);
 
 				$oSmtpClient->LogoutAndDisconnect();
@@ -157,55 +249,6 @@ function sendMessage($oAccount, $oMessage, $rMessageStream)
 					$oException->getMessage()
 				);
 			}
-
-			// if (0 < strlen($sSentFolder))
-			// {
-			// 	try
-			// 	{
-			// 		if (!$oMessage->Bcc())
-			// 		{
-			// 			if (is_resource($rMessageStream))
-			// 			{
-			// 				rewind($rMessageStream);
-			// 			}
-
-			// 			$oImapClient->MessageAppendStream(
-			// 				$sSentFolder, $rMessageStream, $iMessageStreamSize, array(
-			// 					\MailSo\Imap\Enumerations\MessageFlag::SEEN
-			// 				));
-			// 		}
-			// 		else
-			// 		{
-			// 			$rAppendMessageStream = \MailSo\Base\ResourceRegistry::CreateMemoryResource();
-
-			// 			$iAppendMessageStreamSize = \MailSo\Base\Utils::MultipleStreamWriter(
-			// 				$oMessage->ToStream()/*$rMessageStream*/, array($rAppendMessageStream), 8192, true, true, true);
-
-			// 			$oImapClient->MessageAppendStream(
-			// 				$sSentFolder, $rAppendMessageStream, $iAppendMessageStreamSize, array(
-			// 					\MailSo\Imap\Enumerations\MessageFlag::SEEN
-			// 				));
-
-			// 			if (is_resource($rAppendMessageStream))
-			// 			{
-			// 				@fclose($rAppendMessageStream);
-			// 			}
-			// 		}
-			// 	}
-			// 	catch (\Exception $oException)
-			// 	{
-			// 		throw new \Aurora\Modules\Mail\Exceptions\Exception(
-			// 			\Aurora\Modules\Mail\Enums\ErrorCodes::CannotSaveMessageToSentItems,
-			// 			$oException,
-			// 			$oException->getMessage()
-			// 		);
-			// 	}
-
-			// 	if (is_resource($rMessageStream))
-			// 	{
-			// 		@fclose($rMessageStream);
-			// 	}
-			// }
 
 			$mResult = true;
 		}
