@@ -27,6 +27,7 @@ foreach ($aMessagesForSend as $aMessageForSend)
 			if (\is_resource($rMessageResourse))
 			{
 				$mSendResult = sendMessage($oAccount, $rMessageResourse);
+				\fclose($rMessageResourse);
 			}
 	}, $aMessageForSend['FolderFullName'], $aMessageForSend['MessageUid']))
 	{
@@ -35,6 +36,10 @@ foreach ($aMessagesForSend as $aMessageForSend)
 			$oMailModule->Decorator()->MoveMessages($aMessageForSend['AccountId'], $aMessageForSend['FolderFullName'], 'Sent',$aMessageForSend['MessageUid']);
 			$oMailScheduledMessagesModule->Decorator()->RemoveMessage($aMessageForSend['AccountId'], $aMessageForSend['FolderFullName'], $aMessageForSend['MessageUid']);
 		}
+	}
+	else
+	{
+		$oMailScheduledMessagesModule->Decorator()->RemoveMessage($aMessageForSend['AccountId'], $aMessageForSend['FolderFullName'], $aMessageForSend['MessageUid']);
 	}
 }
 
@@ -213,6 +218,7 @@ function sendMessage($oAccount, $rStream)
 				$oSmtpClient->DataWithStream($rMessageStream);
 
 				$oSmtpClient->LogoutAndDisconnect();
+				\fclose($rMessageStream);
 			}
 			catch (\MailSo\Net\Exceptions\ConnectionException $oException)
 			{

@@ -105,6 +105,8 @@ class Module extends \Aurora\System\Module\AbstractModule
 		$InReplyTo = "",
 		$References = "",
 		$Sensitivity = \MailSo\Mime\Enumerations\Sensitivity::NOTHING,
+		$DraftFolder = "",
+		$DraftUid = "",
 		$CustomHeaders = [],
 		$ScheduleDateTime = null)
 	{
@@ -145,6 +147,15 @@ class Module extends \Aurora\System\Module\AbstractModule
 			$FolderFullName = $this->getScheduledFolderFullName($oAccount);
 			$this->oMailModuleMailManager->appendMessageFromStream($oAccount, $rMessageStream, $FolderFullName, $iMessageStreamSize, $iNewUid);
 			$this->oMailModuleMailManager->setMessageFlag($oAccount, $FolderFullName, [$iNewUid], \MailSo\Imap\Enumerations\MessageFlag::SEEN, \Aurora\Modules\Mail\Enums\MessageStoreAction::Add);
+
+			if (0 < strlen($DraftFolder) && 0 < strlen($DraftUid))
+			{
+				try
+				{
+					$this->oMailModuleMailManager->deleteMessage($oAccount, $DraftFolder, array($DraftUid));
+				}
+				catch (\Exception $oException) {}
+			}
 
 			$this->oManager->removeMessage($oAccount->EntityId, $FolderFullName, $iNewUid);
 			$this->oManager->addMessage($oAccount->EntityId, $FolderFullName, $iNewUid, $ScheduleDateTime);
