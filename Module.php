@@ -83,6 +83,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 	public function GetSettings()
 	{
 		return [
+			'ScheduledFolderName' => $this->sScheduledFolderName,
 			'PredefinedSchedule' => $this->getConfig('PredefinedSchedule', [])
 		];
 	}

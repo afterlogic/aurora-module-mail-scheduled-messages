@@ -10,7 +10,9 @@ var
 	Utils = require('%PathToCoreWebclientModule%/js/utils/Common.js'),
 
 	Ajax = require('%PathToCoreWebclientModule%/js/Ajax.js'),
+	Api = require('%PathToCoreWebclientModule%/js/Api.js'),
 	CAbstractPopup = require('%PathToCoreWebclientModule%/js/popups/CAbstractPopup.js'),
+	Screens = require('%PathToCoreWebclientModule%/js/Screens.js'),
 	UserSettings = require('%PathToCoreWebclientModule%/js/Settings.js'),
 
 	CalendarUtils = require('modules/CalendarWebclient/js/utils/Calendar.js'),
@@ -24,8 +26,7 @@ var
 function CScheduleSendingPopup() {
 	CAbstractPopup.call(this);
 
-	this.fGetSendSaveParameters = null;
-	this.fGetDraftFolderFullName = null;
+	this.oCompose = null;
 
 	this.aOptions = ScheduleUtils.getPredefinedOptions();
 	this.scheduledTime = ko.observable(0);
@@ -55,9 +56,8 @@ _.extendOwn(CScheduleSendingPopup.prototype, CAbstractPopup.prototype);
 
 CScheduleSendingPopup.prototype.PopupTemplate = '%ModuleName%_ScheduleSendingPopup';
 
-CScheduleSendingPopup.prototype.onOpen = function (fGetSendSaveParameters, fGetDraftFolderFullName) {
-	this.fGetSendSaveParameters = fGetSendSaveParameters;
-	this.fGetDraftFolderFullName = fGetDraftFolderFullName;
+CScheduleSendingPopup.prototype.onOpen = function (oCompose) {
+	this.oCompose = oCompose;
 	this.timeFormatMoment = (UserSettings.timeFormat() === Enums.TimeFormat.F24) ? 'HH:mm' : 'hh:mm A';
 	this.dateFormatMoment = Utils.getDateFormatForMoment(UserSettings.dateFormat());
 	this.dateFormatDatePicker = CalendarUtils.getDateFormatForDatePicker(UserSettings.dateFormat());
@@ -153,14 +153,22 @@ CScheduleSendingPopup.prototype.selectScheduledTime = function (iUnix) {
 };
 
 CScheduleSendingPopup.prototype.schedule = function () {
-	if (_.isFunction(this.fGetSendSaveParameters)) {
-		var oParameters = this.fGetSendSaveParameters();
-		if (_.isFunction(this.fGetDraftFolderFullName)) {
-			oParameters.DraftFolder = this.fGetDraftFolderFullName();
+	if (_.isFunction(this.oCompose && this.oCompose.getSendSaveParameters)) {
+		var oParameters = this.oCompose.getSendSaveParameters();
+		if (_.isFunction(this.oCompose && this.oCompose.getDraftFolderFullName)) {
+			oParameters.DraftFolder = this.oCompose.getDraftFolderFullName(oParameters.AccountID);
 		}
 		oParameters.ScheduleDateTime = this.scheduledTime();
 		Ajax.send('%ModuleName%', 'SaveScheduledMessage', oParameters, function (oResponse) {
-			console.log('oResponse', oResponse);
+			if (oResponse && oResponse.Result) {
+				Screens.showReport(TextUtils.i18n('%MODULENAME%/REPORT_SENDING_SCHEDULED'));
+				this.closePopup();
+				if (this.oCompose && _.isFunction(this.oCompose.commitAndClose)) {
+					this.oCompose.commitAndClose();
+				}
+			} else {
+				Api.showErrorByCode(oResponse);
+			}
 		}, this);
 	}
 };

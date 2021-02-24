@@ -7,6 +7,7 @@ var
 ;
 
 module.exports = {
+	ScheduledFolderName: '',
 	PredefinedSchedule: [],
 
 	/**
@@ -18,6 +19,7 @@ module.exports = {
 		var oAppDataSection = oAppData['%ModuleName%'];
 
 		if (!_.isEmpty(oAppDataSection)) {
+			this.ScheduledFolderName = Types.pString(oAppDataSection.ScheduledFolderName, this.ScheduledFolderName);
 			this.PredefinedSchedule = Types.pArray(oAppDataSection.PredefinedSchedule, this.PredefinedSchedule);
 		}
 	}
