@@ -176,7 +176,9 @@ CScheduleSendingPopup.prototype.schedule = function () {
 						if (oParameters.DraftFolder) {
 							this.oCompose.clearFolderCache(oParameters.AccountID, oParameters.DraftFolder);
 						}
-						this.oCompose.clearFolderCache(oParameters.AccountID, Settings.ScheduledFolderName);
+						if (Settings.CurrentScheduledFolderName) {
+							this.oCompose.clearFolderCache(oParameters.AccountID, Settings.CurrentScheduledFolderName);
+						}
 					}
 				}
 			} else {

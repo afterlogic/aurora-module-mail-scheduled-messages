@@ -10,6 +10,8 @@ module.exports = {
 	ScheduledFolderName: '',
 	PredefinedSchedule: [],
 
+	CurrentScheduledFolderName: '',
+
 	/**
 	 * Initializes settings from AppData object sections.
 	 *
@@ -22,5 +24,9 @@ module.exports = {
 			this.ScheduledFolderName = Types.pString(oAppDataSection.ScheduledFolderName, this.ScheduledFolderName);
 			this.PredefinedSchedule = Types.pArray(oAppDataSection.PredefinedSchedule, this.PredefinedSchedule);
 		}
+	},
+
+	setCurrentScheduledFolder: function (sCurrentScheduledFolderName) {
+		this.CurrentScheduledFolderName = sCurrentScheduledFolderName;
 	}
 };
