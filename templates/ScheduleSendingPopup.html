@@ -1,30 +1,30 @@
 <div class="popup popup_schedule" style="display: none;">
-    <div class="mask" data-bind="click: cancelPopup"></div>
-    <div class="popup_panel">
-        <span class="close" data-bind="click: cancelPopup"></span>
-        <span class="popup_heading" data-bind="i18n: {'key': '%MODULENAME%/HEADING_POPUP_SCHEDULE_SENDING'}"></span>
+	<div class="mask" data-bind="click: cancelPopup"></div>
+	<div class="popup_panel">
+		<span class="close" data-bind="click: cancelPopup"></span>
+		<span class="popup_heading" data-bind="i18n: {'key': '%MODULENAME%/HEADING_POPUP_SCHEDULE_SENDING'}"></span>
 
-        <div class="fields">
-            <div class="row">
-                <div class="items_list simple_list" style="border: 0; border-bottom: 1px solid #d5d9dc; margin: 0;">
-                    <!-- ko foreach: aOptions -->
-                        <div class="item account" style="border: 0;"
-                             data-bind="click: $data.Handler ? Handler : function () { $parent.schedule(Unix); }">
-                            <span class="title" data-bind="text: LeftLabel"></span>
-                            <span style="float: right; margin-left: 20px;" data-bind="text: RightLabel"></span>
-                        </div>
-                    <!-- /ko -->
-                </div>
-            </div>
-            <div class="row" style="text-align: center; margin-top: 15px; color: #626262;">
-                <span>Select date and time</span>
-            </div>
-            <div class="row" style="text-align: center; color: #626262;">
-                <input class="date input" style="width: 130px;" type="text" spellcheck="false" readonly="readonly"
-                       data-bind="initDom: startDom"/>
-                <span class="custom_selector"
-                      data-bind="customSelect: {'control': false, 'selected': 'selected', 'input': true, 'options': timeOptions(), 'timeOptions': timeOptions, value: startTime, optionsText: 'text', optionsValue: 'value'}">
-                    <input class="value time input" style="width: 65px;" spellcheck="false" type="text" data-bind="value: startTime"/>
+		<div class="fields">
+			<div class="row">
+				<div class="items_list simple_list">
+					<!-- ko foreach: aOptions -->
+					<div class="item account" data-bind="css: {'selected': $parent.scheduledTime() === Unix},
+							click: function () { $parent.selectScheduledTime(Unix); }">
+						<span class="title" data-bind="text: LeftLabel"></span>
+						<span class="title title_right" data-bind="text: RightLabel"></span>
+					</div>
+					<!-- /ko -->
+				</div>
+			</div>
+			<div class="row row_select_datetime row_top_indent">
+				<span data-bind="i18n: {'key': '%MODULENAME%/LABEL_SELECT_DATE_AND_TIME'}"></span>
+			</div>
+			<div class="row row_select_datetime">
+				<input class="input input_date" type="text" spellcheck="false" readonly="readonly" data-bind="initDom: dateDom"/>
+				<span class="custom_selector"
+						data-bind="customSelect: {'control': false, 'selected': 'selected', 'input': true, 'options': timeOptions(), 'timeOptions': timeOptions, value: selectedTime, optionsText: 'text', optionsValue: 'value'}">
+                    <input class="input input_time" spellcheck="false" type="text"
+                           data-bind="value: selectedTime"/>
                     <span class="dropdown">
                         <span class="dropdown_helper">
                             <span class="dropdown_arrow"><span></span></span>
@@ -32,12 +32,12 @@
                         </span>
                     </span>
                 </span>
-            </div>
-            <div class="buttons">
-                <span class="button secondary_button"
-                      data-bind="i18n: {'key': 'COREWEBCLIENT/ACTION_CANCEL'}, click: cancelPopup"></span>
-            </div>
-        </div>
-    </div>
-    <span class="helper"></span>
+			</div>
+			<div class="buttons">
+				<span class="button" data-bind="i18n: {'key': '%MODULENAME%/ACTION_SCHEDULE'}, command: scheduleCommand"></span>
+				<span class="button secondary_button" data-bind="i18n: {'key': 'COREWEBCLIENT/ACTION_CANCEL'}, click: cancelPopup"></span>
+			</div>
+		</div>
+	</div>
+	<span class="helper"></span>
 </div>

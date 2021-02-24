@@ -1,133 +1,172 @@
 'use strict';
 
 var
-    _ = require('underscore'),
-    ko = require('knockout'),
+	_ = require('underscore'),
+	ko = require('knockout'),
+	moment = require('moment'),
 
-    DateUtils = require('%PathToCoreWebclientModule%/js/utils/Date.js'),
-    TextUtils = require('%PathToCoreWebclientModule%/js/utils/Text.js'),
-    Types = require('%PathToCoreWebclientModule%/js/utils/Types.js'),
+	DateUtils = require('%PathToCoreWebclientModule%/js/utils/Date.js'),
+	TextUtils = require('%PathToCoreWebclientModule%/js/utils/Text.js'),
+	Utils = require('%PathToCoreWebclientModule%/js/utils/Common.js'),
 
-    CAbstractPopup = require('%PathToCoreWebclientModule%/js/popups/CAbstractPopup.js'),
-    UserSettings = require('%PathToCoreWebclientModule%/js/Settings.js'),
+	Ajax = require('%PathToCoreWebclientModule%/js/Ajax.js'),
+	CAbstractPopup = require('%PathToCoreWebclientModule%/js/popups/CAbstractPopup.js'),
+	UserSettings = require('%PathToCoreWebclientModule%/js/Settings.js'),
 
-    CalendarUtils = require('modules/CalendarWebclient/js/utils/Calendar.js'),
+	CalendarUtils = require('modules/CalendarWebclient/js/utils/Calendar.js'),
 
-    ScheduleUtils = require('modules/%ModuleName%/js/utils/Schedule.js')
+	ScheduleUtils = require('modules/%ModuleName%/js/utils/Schedule.js')
 ;
 
 /**
  * @constructor
  */
 function CScheduleSendingPopup() {
-    CAbstractPopup.call(this);
+	CAbstractPopup.call(this);
 
-    this.aOptions = ScheduleUtils.getPredefinedOptions();
-    // this.aOptions.push({
-    //     LeftLabel: 'Select date and time',
-    //     RightLabel: '',
-    //     Handler: this.selectDateTime.bind(this)
-    // });
+	this.fGetSendSaveParameters = null;
+	this.fGetDraftFolderFullName = null;
 
-    this.dateFormatDatePicker = 'mm/dd/yy';
-    this.startDom = ko.observable(null);
-    this.timeOptions = ko.observableArray(CalendarUtils.getTimeListStepHalfHour((UserSettings.timeFormat() !== Enums.TimeFormat.F24) ? 'hh:mm A' : 'HH:mm'));
-    UserSettings.timeFormat.subscribe(function () {
-        this.timeOptions(CalendarUtils.getTimeListStepHalfHour((UserSettings.timeFormat() !== Enums.TimeFormat.F24) ? 'hh:mm A' : 'HH:mm'));
-    }, this);
-    this.startDate = ko.observable('');
-    this.startTime = ko.observable('');
-    this.startTime.subscribe(function () {
-        this.selectStartDate();
-    }, this);
-    this.lockSelectStartEndDate = ko.observable(false);
-    this.initializeDatePickers();
+	this.aOptions = ScheduleUtils.getPredefinedOptions();
+	this.scheduledTime = ko.observable(0);
+
+	this.timeFormatMoment = 'HH:mm';
+	this.dateFormatMoment = 'MM/DD/YYYY';
+	this.dateFormatDatePicker = 'mm/dd/yy';
+	this.dateDom = ko.observable(null);
+	this.timeOptions = ko.observableArray(CalendarUtils.getTimeListStepHalfHour((UserSettings.timeFormat() !== Enums.TimeFormat.F24) ? 'hh:mm A' : 'HH:mm'));
+	UserSettings.timeFormat.subscribe(function () {
+		this.timeOptions(CalendarUtils.getTimeListStepHalfHour((UserSettings.timeFormat() !== Enums.TimeFormat.F24) ? 'hh:mm A' : 'HH:mm'));
+	}, this);
+	this.selectedDate = ko.observable('');
+	this.selectedTime = ko.observable('');
+	this.selectedTime.subscribe(function () {
+		this.selectDatetime();
+	}, this);
+	this.lockSelectStartEndDate = ko.observable(false);
+	this.initializeDatePickers();
+
+	this.scheduleCommand = Utils.createCommand(this, this.schedule, function () {
+		return this.scheduledTime() !== 0;
+	}.bind(this));
 }
 
 _.extendOwn(CScheduleSendingPopup.prototype, CAbstractPopup.prototype);
 
 CScheduleSendingPopup.prototype.PopupTemplate = '%ModuleName%_ScheduleSendingPopup';
 
-CScheduleSendingPopup.prototype.onOpen = function () {
-    // this.dateFormatDatePicker = CalendarUtils.getDateFormatForDatePicker(oParameters.DateFormat);
-    this.initializeDatePickers();
+CScheduleSendingPopup.prototype.onOpen = function (fGetSendSaveParameters, fGetDraftFolderFullName) {
+	this.fGetSendSaveParameters = fGetSendSaveParameters;
+	this.fGetDraftFolderFullName = fGetDraftFolderFullName;
+	this.timeFormatMoment = (UserSettings.timeFormat() === Enums.TimeFormat.F24) ? 'HH:mm' : 'hh:mm A';
+	this.dateFormatMoment = Utils.getDateFormatForMoment(UserSettings.dateFormat());
+	this.dateFormatDatePicker = CalendarUtils.getDateFormatForDatePicker(UserSettings.dateFormat());
+	this.selectedDate('');
+	this.selectedTime('');
+	this.scheduledTime(0);
+	this.initializeDatePickers();
 };
 
 CScheduleSendingPopup.prototype.initializeDatePickers = function () {
-    if (this.startDom()) {
-        this.createDatePickerObject(this.startDom(), this.selectStartDate.bind(this));
-        this.startDom().datepicker('option', 'dateFormat', this.dateFormatDatePicker);
-    }
+	if (this.dateDom()) {
+		this.createDatePickerObject(this.dateDom(), this.selectDatetime.bind(this));
+		this.dateDom().datepicker('option', 'dateFormat', this.dateFormatDatePicker);
+	}
 };
 
 CScheduleSendingPopup.prototype.createDatePickerObject = function (oElement, fSelect) {
-    $(oElement).datepicker({
-        showOtherMonths: true,
-        selectOtherMonths: true,
-        monthNames: DateUtils.getMonthNamesArray(),
-        dayNamesMin: TextUtils.i18n('COREWEBCLIENT/LIST_DAY_NAMES_MIN').split(' '),
-        nextText: '',
-        prevText: '',
-        // firstDay: Settings.WeekStartsOn,
-        showOn: 'both',
-        buttonText: '',
-        buttonImage: './static/styles/images/calendar-icon.png',
-        buttonImageOnly: true,
-        dateFormat: this.dateFormatDatePicker,
-        onSelect: fSelect
-    });
+	$(oElement).datepicker({
+		showOtherMonths: true,
+		selectOtherMonths: true,
+		monthNames: DateUtils.getMonthNamesArray(),
+		dayNamesMin: TextUtils.i18n('COREWEBCLIENT/LIST_DAY_NAMES_MIN').split(' '),
+		nextText: '',
+		prevText: '',
+		// firstDay: Settings.WeekStartsOn,
+		showOn: 'both',
+		buttonText: '',
+		buttonImage: './static/styles/images/calendar-icon.png',
+		buttonImageOnly: true,
+		dateFormat: this.dateFormatDatePicker,
+		onSelect: fSelect
+	});
 
-    $(oElement).mousedown(function () {
-        $('#ui-datepicker-div').toggle();
-    });
+	$(oElement).mousedown(function () {
+		$('#ui-datepicker-div').toggle();
+	});
 };
 
-CScheduleSendingPopup.prototype.setStartDate = function (oMomentDate, bChangeInDatepicker) {
-    if (bChangeInDatepicker && this.startDom()) {
-        this.startDom().datepicker('setDate', oMomentDate.toDate());
-    }
-    this.startDate(this.getDateWithoutYearIfMonthWord($(this.startDom()).val()));
+CScheduleSendingPopup.prototype.selectDatetime = function () {
+	if (!this.lockSelectStartEndDate()) {
+		this.lockSelectStartEndDate(true);
+
+		var
+			oSelectedDate = this.getDateTime(this.dateDom(), this.selectedTime()),
+			oSelectedMoment = moment(oSelectedDate)
+		;
+
+		this.selectedDate(this.getDateWithoutYearIfMonthWord($(this.dateDom()).val()));
+		this.selectedTime(oSelectedMoment.isValid() ? oSelectedMoment.format(this.timeFormatMoment) : '');
+		this.scheduledTime(oSelectedMoment.isValid() ? oSelectedMoment.unix() : 0);
+
+		this.lockSelectStartEndDate(false);
+	}
 };
 
-CScheduleSendingPopup.prototype.selectStartDate = function () {
-    if (!this.lockSelectStartEndDate() && this.startDate()) {
-        this.lockSelectStartEndDate(true);
+CScheduleSendingPopup.prototype.getDateTime = function (oInput, sTime) {
+	sTime = sTime ? moment(sTime, this.timeFormatMoment).format('HH:mm') : '';
 
-        var
-            oStartDate = this.getDateTime(this.startDom(), this.startTime()),
-            oStartMomentDate = moment(oStartDate)
-        ;
+	var
+		oDate = oInput.datepicker('getDate'),
+		aTime = sTime ? sTime.split(':') : []
+	;
 
-        this.setStartDate(oStartMomentDate, false);
-        this.startTime(oStartMomentDate.format(this.timeFormatMoment));
+	//in some cases aTime is a current time (it happens only once after page loading), in this case oDate is null, so code falls.
+	// the checking if oDate is not null is necessary
+	if (aTime.length === 2 && oDate !== null) {
+		oDate.setHours(aTime[0]);
+		oDate.setMinutes(aTime[1]);
+	}
 
-        this.lockSelectStartEndDate(false);
-    }
+	return oDate;
 };
 
 CScheduleSendingPopup.prototype.getDateWithoutYearIfMonthWord = function (sDate) {
-    var
-        aDate = sDate.split(' '),
-        oNowMoment = moment(),
-        oNowYear = oNowMoment.format('YYYY')
-    ;
+	var
+		aDate = sDate.split(' '),
+		oNowMoment = moment(),
+		oNowYear = oNowMoment.format('YYYY')
+	;
 
-    if (aDate.length === 3 && oNowYear === aDate[2]) {
-        return aDate[0] + ' ' + aDate[1];
-    }
-    return sDate;
+	if (aDate.length === 3 && oNowYear === aDate[2]) {
+		return aDate[0] + ' ' + aDate[1];
+	}
+	return sDate;
 };
 
-CScheduleSendingPopup.prototype.schedule = function (iUnix) {
-    console.log('iUnix', iUnix);
+CScheduleSendingPopup.prototype.selectScheduledTime = function (iUnix) {
+	if (this.scheduledTime() === iUnix) {
+		this.selectDatetime();
+	} else {
+		this.scheduledTime(iUnix);
+	}
 };
 
-CScheduleSendingPopup.prototype.selectDateTime = function () {
-    console.log('selectDateTime');
+CScheduleSendingPopup.prototype.schedule = function () {
+	if (_.isFunction(this.fGetSendSaveParameters)) {
+		var oParameters = this.fGetSendSaveParameters();
+		if (_.isFunction(this.fGetDraftFolderFullName)) {
+			oParameters.DraftFolder = this.fGetDraftFolderFullName();
+		}
+		oParameters.ScheduleDateTime = this.scheduledTime();
+		Ajax.send('%ModuleName%', 'SaveScheduledMessage', oParameters, function (oResponse) {
+			console.log('oResponse', oResponse);
+		}, this);
+	}
 };
 
 CScheduleSendingPopup.prototype.cancelPopup = function () {
-    this.closePopup();
+	this.closePopup();
 };
 
 module.exports = new CScheduleSendingPopup();
