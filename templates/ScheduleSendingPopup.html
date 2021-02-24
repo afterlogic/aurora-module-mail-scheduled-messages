@@ -34,8 +34,9 @@
                 </span>
 			</div>
 			<div class="buttons">
-				<span class="button" data-bind="i18n: {'key': '%MODULENAME%/ACTION_SCHEDULE'}, command: scheduleCommand"></span>
-				<span class="button secondary_button" data-bind="i18n: {'key': 'COREWEBCLIENT/ACTION_CANCEL'}, click: cancelPopup"></span>
+				<span class="button" data-bind="i18n: {'key': '%MODULENAME%/ACTION_SCHEDULE'}, command: scheduleCommand, visible: !scheduleInProcess()"></span>
+				<span class="button" data-bind="i18n: {'key': '%MODULENAME%/ACTION_SCHEDULE_IN_PROGRESS'}, visible: scheduleInProcess"></span>
+				<span class="button secondary_button" data-bind="i18n: {'key': 'COREWEBCLIENT/ACTION_CANCEL'}, click: cancelPopup, visible: !scheduleInProcess()"></span>
 			</div>
 		</div>
 	</div>

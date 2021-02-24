@@ -17,7 +17,9 @@ var
 
 	CalendarUtils = require('modules/CalendarWebclient/js/utils/Calendar.js'),
 
-	ScheduleUtils = require('modules/%ModuleName%/js/utils/Schedule.js')
+	ScheduleUtils = require('modules/%ModuleName%/js/utils/Schedule.js'),
+
+	Settings = require('modules/%ModuleName%/js/Settings.js')
 ;
 
 /**
@@ -47,8 +49,9 @@ function CScheduleSendingPopup() {
 	this.lockSelectStartEndDate = ko.observable(false);
 	this.initializeDatePickers();
 
+	this.scheduleInProcess = ko.observable(false);
 	this.scheduleCommand = Utils.createCommand(this, this.schedule, function () {
-		return this.scheduledTime() !== 0;
+		return this.scheduledTime() !== 0 && !this.scheduleInProcess();
 	}.bind(this));
 }
 
@@ -155,16 +158,26 @@ CScheduleSendingPopup.prototype.selectScheduledTime = function (iUnix) {
 CScheduleSendingPopup.prototype.schedule = function () {
 	if (_.isFunction(this.oCompose && this.oCompose.getSendSaveParameters)) {
 		var oParameters = this.oCompose.getSendSaveParameters();
-		if (_.isFunction(this.oCompose && this.oCompose.getDraftFolderFullName)) {
+		if (oParameters.DraftUid && _.isFunction(this.oCompose && this.oCompose.getDraftFolderFullName)) {
 			oParameters.DraftFolder = this.oCompose.getDraftFolderFullName(oParameters.AccountID);
 		}
 		oParameters.ScheduleDateTime = this.scheduledTime();
+		this.scheduleInProcess(true);
 		Ajax.send('%ModuleName%', 'SaveScheduledMessage', oParameters, function (oResponse) {
+			this.scheduleInProcess(false);
 			if (oResponse && oResponse.Result) {
 				Screens.showReport(TextUtils.i18n('%MODULENAME%/REPORT_SENDING_SCHEDULED'));
 				this.closePopup();
-				if (this.oCompose && _.isFunction(this.oCompose.commitAndClose)) {
-					this.oCompose.commitAndClose();
+				if (this.oCompose) {
+					if (_.isFunction(this.oCompose.commitAndClose)) {
+						this.oCompose.commitAndClose();
+					}
+					if (_.isFunction(this.oCompose.clearFolderCache)) {
+						if (oParameters.DraftFolder) {
+							this.oCompose.clearFolderCache(oParameters.AccountID, oParameters.DraftFolder);
+						}
+						this.oCompose.clearFolderCache(oParameters.AccountID, Settings.ScheduledFolderName);
+					}
 				}
 			} else {
 				Api.showErrorByCode(oResponse);
@@ -174,7 +187,9 @@ CScheduleSendingPopup.prototype.schedule = function () {
 };
 
 CScheduleSendingPopup.prototype.cancelPopup = function () {
-	this.closePopup();
+	if (!this.scheduleInProcess()) {
+		this.closePopup();
+	}
 };
 
 module.exports = new CScheduleSendingPopup();
