@@ -6,16 +6,40 @@ var
 
 	Types = require('%PathToCoreWebclientModule%/js/utils/Types.js'),
 
+	App = require('%PathToCoreWebclientModule%/js/App.js'),
+	ModulesManager = require('%PathToCoreWebclientModule%/js/ModulesManager.js'),
+
+	ComposeUtils = require('modules/MailWebclient/js/utils/Compose.js'),
+
 	Schedule = require('modules/%ModuleName%/js/utils/Schedule.js'),
 
 	Settings = require('modules/%ModuleName%/js/Settings.js')
 ;
 
 function CScheduledInfoView() {
-	this.visible = ko.observable(false);
+	this.iAccountId = 0;
+	this.sFolderFullName = '';
+	this.sMessageUid = '';
+
 	this.scheduledText = ko.observable('');
+	this.visible = ko.observable(false);
 
 	this.oMessagePane = null;
+
+	this.bWaitDraftSaving = false;
+	App.subscribeEvent('MailWebclient::ComposeMessageLoaded', function (aParams) {
+		if (this.iAccountId === aParams.AccountId && this.sFolderFullName === aParams.FolderFullName && this.sMessageUid === aParams.MessageUid) {
+			this.bWaitDraftSaving = true;
+			aParams.Compose.executeSaveCommand();
+		}
+	}.bind(this));
+	App.subscribeEvent('ReceiveAjaxResponse::after', function (oParams) {
+		if (this.bWaitDraftSaving && oParams.Request.Module === 'Mail' && oParams.Request.Method === 'SaveMessage')
+		{
+			this.bWaitDraftSaving = false;
+			ModulesManager.run('MailWebclient', 'deleteMessages', [this.iAccountId, this.sFolderFullName, [this.sMessageUid]]);
+		}
+	}.bind(this));
 }
 
 CScheduledInfoView.prototype.ViewTemplate = '%ModuleName%_ScheduledInfoView';
@@ -31,6 +55,10 @@ CScheduledInfoView.prototype.ViewTemplate = '%ModuleName%_ScheduledInfoView';
  * @param {number} oMessageProps.aExtend[].ScheduleTimestamp
  */
 CScheduledInfoView.prototype.doAfterPopulatingMessage = function (oMessageProps) {
+	this.bWaitDraftSaving = false;
+	this.iAccountId = 0;
+	this.sFolderFullName = '';
+	this.sMessageUid = '';
 	this.scheduledText('');
 	this.visible(false);
 	if (oMessageProps && oMessageProps.sFolderFullName === Settings.CurrentScheduledFolderName) {
@@ -41,19 +69,19 @@ CScheduledInfoView.prototype.doAfterPopulatingMessage = function (oMessageProps)
 			})
 		;
 		if (oSchedule) {
+			this.iAccountId = oMessageProps.iAccountId;
+			this.sFolderFullName = oMessageProps.sFolderFullName;
+			this.sMessageUid = oMessageProps.sMessageUid;
 			this.scheduledText(Schedule.getScheduledAtText(oSchedule.ScheduleTimestamp));
 			this.visible(true);
 		}
 	}
 };
 
-CScheduledInfoView.prototype.assignMessagePaneExtInterface = function (oMessagePane) {
-	this.oMessagePane = oMessagePane;
-	console.log('assignMessagePaneExtInterface', oMessagePane);
-};
-
 CScheduledInfoView.prototype.cancelSending = function () {
-	console.log('cancelSending');
+	if (this.iAccountId !== 0) {
+		ComposeUtils.composeMessageFromDrafts(this.iAccountId, this.sFolderFullName, this.sMessageUid);
+	}
 };
 
 module.exports = new CScheduledInfoView();
