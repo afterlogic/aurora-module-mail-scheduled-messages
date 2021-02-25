@@ -30,7 +30,15 @@ class Module extends \Aurora\System\Module\AbstractModule
 
 		$this->subscribeEvent('Mail::GetFolders::before', array($this, 'onBeforeGetFolders'));
 		$this->subscribeEvent('Mail::GetMessage::after', array($this, 'onAfterGetMessage'));
+		$this->subscribeEvent('Mail::MoveMessages::after', array($this, 'onMoveOrDeleteMessages'));
+		$this->subscribeEvent('Mail::DeleteMessages::after', array($this, 'onMoveOrDeleteMessages'));
 		$this->subscribeEvent('Core::CreateTables::after', array($this, 'onAfterCreateTables'));
+
+		$this->denyMethodsCallByWebApi([
+			'GetMessagesForSend',
+			'GetMessage',
+			'RemoveMessage'
+		]);
 
 		$oMailModule = \Aurora\Modules\Mail\Module::getInstance();
 		$this->oMailModuleAccountsManager = $oMailModule->getAccountsManager();
@@ -72,6 +80,25 @@ class Module extends \Aurora\System\Module\AbstractModule
 			if ($aMessage !== false)
 			{
 				$mResult->addExtend('ScheduleTimestamp', ['ScheduleTimestamp' => $aMessage['ScheduleTimestamp']]);
+			}
+		}
+	}
+
+	public function onMoveOrDeleteMessages($aArgs, &$mResult)
+	{
+		if ($mResult)
+		{
+			$iAccountID = $aArgs['AccountID'];
+			$oAccount = $this->oMailModuleAccountsManager->getAccountById($iAccountID);
+			$sFolder = $aArgs['Folder'];
+			if ($sFolder === $this->getScheduledFolderFullName($oAccount))
+			{
+				$sUids = $aArgs['Uids'];
+				$aUids = \Aurora\System\Utils::ExplodeIntUids((string) $sUids);
+				foreach ($aUids as $sUid)
+				{
+					$this->oManager->removeMessage($iAccountID, $sFolder, $sUid);
+				}
 			}
 		}
 	}
