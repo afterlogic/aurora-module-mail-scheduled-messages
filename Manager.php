@@ -46,6 +46,11 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
         return $this->oStorage->updateMessageScheduleTimestamp($iAccountID, $sFolderFullName, $sMessageUid, $iTimestamp);
     }
 
+	public function getMessage($iAccountID, $sFolderFullName, $sMessageUid)
+    {
+        return $this->oStorage->getMessage($iAccountID, $sFolderFullName, $sMessageUid);
+    }
+
     public function removeMessage($iAccountID, $sFolderFullName, $sMessageUid)
     {
         return $this->oStorage->removeMessage($iAccountID, $sFolderFullName, $sMessageUid);

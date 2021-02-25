@@ -29,6 +29,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 		$this->oManager = new Manager($this);
 
 		$this->subscribeEvent('Mail::GetFolders::before', array($this, 'onBeforeGetFolders'));
+		$this->subscribeEvent('Mail::GetMessage::after', array($this, 'onAfterGetMessage'));
 		$this->subscribeEvent('Core::CreateTables::after', array($this, 'onAfterCreateTables'));
 
 		$oMailModule = \Aurora\Modules\Mail\Module::getInstance();
@@ -58,6 +59,19 @@ class Module extends \Aurora\System\Module\AbstractModule
 					\Aurora\Modules\Mail\Module::Decorator()->CreateFolder($iAccountID, $sScheduledFolderFullName, '', '/');
 				}
 				catch (\Exception $oException) {}
+			}
+		}
+	}
+
+	public function onAfterGetMessage($aArgs, &$mResult)
+	{
+		if ($mResult instanceof \Aurora\Modules\Mail\Classes\Message)
+		{
+			$iAccountID = $aArgs['AccountID'];
+			$aMessage = $this->oManager->getMessage($iAccountID, $mResult->getFolder(), $mResult->getUid());
+			if ($aMessage !== false)
+			{
+				$mResult->addExtend('ScheduleTimestamp', ['ScheduleTimestamp' => $aMessage['ScheduleTimestamp']]);
 			}
 		}
 	}
@@ -168,6 +182,11 @@ class Module extends \Aurora\System\Module\AbstractModule
 	public function GetMessagesForSend($ScheduledTimestamp)
 	{
 		return $this->oManager->getMessagesForSend($ScheduledTimestamp);
+	}
+
+	public function GetMessage($AccountID, $FolderFullName, $MessageUid)
+	{
+		return $this->oManager->getMessage($AccountID, $FolderFullName, $MessageUid);
 	}
 
 	public function RemoveMessage($AccountID, $FolderFullName, $MessageUid)

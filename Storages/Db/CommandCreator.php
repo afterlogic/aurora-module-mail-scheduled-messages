@@ -54,6 +54,13 @@ class CommandCreator extends \Aurora\System\Db\AbstractCommandCreator
         return sprintf($sSql, $this->prefix(), $iScheduledTimestamp, $iAccountID, $this->escapeString($sFolderFullName), $this->escapeString($sMessageUid));
     }
 
+    public function getMessage($iAccountID, $sFolderFullName, $sMessageUid)
+    {
+        $sSql = 'SELECT * FROM %smail_scheduled_messages WHERE account_id = %d AND folder_full_name = %s AND message_uid = %s';
+
+        return sprintf($sSql, $this->prefix(), $iAccountID, $this->escapeString($sFolderFullName), $this->escapeString($sMessageUid));
+    }
+
     /**
      * @param string $sDeviceId
      *

@@ -61,6 +61,27 @@ class Storage extends \Aurora\Modules\MailScheduledMessages\Storages\Storage
 		return $mResult;
 	}
 
+	public function getMessage($iAccountID, $sFolderFullName, $sMessageUid)
+    {
+		$mResult = false;
+        if ($this->oConnection->Execute($this->oCommandCreator->getMessage($iAccountID, $sFolderFullName, $sMessageUid)))
+		{
+			$oRow = $this->oConnection->GetNextRecord();
+			if ($oRow !== false)
+			{
+				$mResult = [
+					'AccountId' => (int) $oRow->account_id,
+					'FolderFullName' => $oRow->folder_full_name,
+					'MessageUid' => $oRow->message_uid,
+					'ScheduleTimestamp' => (int) $oRow->schedule_timestamp
+				];
+			}
+			$this->oConnection->FreeResult();
+		}
+
+		return $mResult;
+    }
+
     public function addMessage($iAccountID, $sFolderFullName, $sMessageUid, $iTimestamp)
     {
         return $this->oConnection->Execute($this->oCommandCreator->addMessage($iAccountID, $sFolderFullName, $sMessageUid, $iTimestamp));
