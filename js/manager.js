@@ -45,7 +45,9 @@ module.exports = function (oAppData) {
 		return {
 			start: function (ModulesManager) {
 				if (ModulesManager.isModuleEnabled('MailWebclient')) {
+
 					ModulesManager.run('MailWebclient', 'registerComposeToolbarController', [require('modules/%ModuleName%/js/views/ComposeSendButtonView.js')]);
+
 					App.subscribeEvent('MailWebclient::ConstructView::before', function (oParams) {
 						if (oParams.Name === 'CMailView') {
 							var
@@ -67,6 +69,10 @@ module.exports = function (oAppData) {
 								}
 							});
 						}
+					});
+
+					App.subscribeEvent('MailWebclient::RegisterMessagePaneController', function (fRegisterMessagePaneController) {
+						fRegisterMessagePaneController(require('modules/%ModuleName%/js/views/ScheduledInfoView.js'), 'BeforeMessageBody');
 					});
 				}
 			}

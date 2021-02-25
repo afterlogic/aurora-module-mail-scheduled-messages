@@ -4,6 +4,7 @@ var
 	_ = require('underscore'),
 	moment = require('moment'),
 
+	TextUtils = require('%PathToCoreWebclientModule%/js/utils/Text.js'),
 	Types = require('%PathToCoreWebclientModule%/js/utils/Types.js'),
 
 	CDateModel = require('%PathToCoreWebclientModule%/js/models/CDateModel.js'),
@@ -113,6 +114,13 @@ ScheduleUtils.getPredefinedOptions = function () {
 		}
 	});
 	return _.uniq(aResultOptions);
+};
+
+ScheduleUtils.getScheduledAtText = function (iUnix) {
+	var oMoment = moment.unix(iUnix);
+	return TextUtils.i18n('%MODULENAME%/INFO_SENDING_SCHEDULED_FOR', {
+		'DATA': oMoment.format('D MMM, ' + CDateModel.prototype.getTimeFormat())
+	});
 };
 
 module.exports = ScheduleUtils;
