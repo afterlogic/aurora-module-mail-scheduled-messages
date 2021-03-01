@@ -12,6 +12,7 @@ var
 	Ajax = require('%PathToCoreWebclientModule%/js/Ajax.js'),
 	Api = require('%PathToCoreWebclientModule%/js/Api.js'),
 	CAbstractPopup = require('%PathToCoreWebclientModule%/js/popups/CAbstractPopup.js'),
+	ModulesManager = require('%PathToCoreWebclientModule%/js/ModulesManager.js'),
 	Screens = require('%PathToCoreWebclientModule%/js/Screens.js'),
 	UserSettings = require('%PathToCoreWebclientModule%/js/Settings.js'),
 
@@ -29,6 +30,7 @@ function CScheduleSendingPopup() {
 	CAbstractPopup.call(this);
 
 	this.oCompose = null;
+	this.fOnClose = null;
 
 	this.aOptions = ScheduleUtils.getPredefinedOptions();
 	this.scheduledTime = ko.observable(0);
@@ -59,8 +61,9 @@ _.extendOwn(CScheduleSendingPopup.prototype, CAbstractPopup.prototype);
 
 CScheduleSendingPopup.prototype.PopupTemplate = '%ModuleName%_ScheduleSendingPopup';
 
-CScheduleSendingPopup.prototype.onOpen = function (oCompose) {
+CScheduleSendingPopup.prototype.onOpen = function (oCompose, fOnClose) {
 	this.oCompose = oCompose;
+	this.fOnClose = fOnClose;
 	this.timeFormatMoment = (UserSettings.timeFormat() === Enums.TimeFormat.F24) ? 'HH:mm' : 'hh:mm A';
 	this.dateFormatMoment = Utils.getDateFormatForMoment(UserSettings.dateFormat());
 	this.dateFormatDatePicker = CalendarUtils.getDateFormatForDatePicker(UserSettings.dateFormat());
@@ -156,6 +159,23 @@ CScheduleSendingPopup.prototype.selectScheduledTime = function (iUnix) {
 };
 
 CScheduleSendingPopup.prototype.schedule = function () {
+	if (_.isFunction(this.oCompose && this.oCompose.koAllAttachmentsUploaded)) {
+		if (this.oCompose.koAllAttachmentsUploaded()) {
+			this.scheduleAfterAllUploaded();
+		} else {
+			var oSubscription = this.oCompose.koAllAttachmentsUploaded.subscribe(function () {
+				if (this.oCompose.koAllAttachmentsUploaded()) {
+					this.scheduleAfterAllUploaded();
+				}
+				oSubscription.dispose();
+			}, this);
+		}
+	} else {
+		this.scheduleAfterAllUploaded();
+	}
+};
+
+CScheduleSendingPopup.prototype.scheduleAfterAllUploaded = function () {
 	if (_.isFunction(this.oCompose && this.oCompose.getSendSaveParameters)) {
 		var oParameters = this.oCompose.getSendSaveParameters();
 		if (oParameters.DraftUid && _.isFunction(this.oCompose && this.oCompose.getDraftFolderFullName)) {
@@ -168,6 +188,7 @@ CScheduleSendingPopup.prototype.schedule = function () {
 			if (oResponse && oResponse.Result) {
 				Screens.showReport(TextUtils.i18n('%MODULENAME%/REPORT_SENDING_SCHEDULED'));
 				this.closePopup();
+				ModulesManager.run('MailWebclient', 'removeMessageFromCurrentList', [oParameters.AccountID, oParameters.DraftFolder, oParameters.DraftUid]);
 				if (this.oCompose) {
 					if (_.isFunction(this.oCompose.commitAndClose)) {
 						this.oCompose.commitAndClose();
@@ -191,6 +212,12 @@ CScheduleSendingPopup.prototype.schedule = function () {
 CScheduleSendingPopup.prototype.cancelPopup = function () {
 	if (!this.scheduleInProcess()) {
 		this.closePopup();
+	}
+};
+
+CScheduleSendingPopup.prototype.onClose = function () {
+	if (_.isFunction(this.fOnClose)) {
+		this.fOnClose();
 	}
 };
 

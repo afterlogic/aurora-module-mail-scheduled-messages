@@ -4,10 +4,12 @@ var
 	_ = require('underscore'),
 	ko = require('knockout'),
 
+	TextUtils = require('%PathToCoreWebclientModule%/js/utils/Text.js'),
 	Types = require('%PathToCoreWebclientModule%/js/utils/Types.js'),
 
 	App = require('%PathToCoreWebclientModule%/js/App.js'),
 	ModulesManager = require('%PathToCoreWebclientModule%/js/ModulesManager.js'),
+	Screens = require('%PathToCoreWebclientModule%/js/Screens.js'),
 
 	ComposeUtils = require('modules/MailWebclient/js/utils/Compose.js'),
 
@@ -38,6 +40,7 @@ function CScheduledInfoView() {
 		{
 			this.bWaitDraftSaving = false;
 			ModulesManager.run('MailWebclient', 'deleteMessages', [this.iAccountId, this.sFolderFullName, [this.sMessageUid]]);
+			Screens.showReport(TextUtils.i18n('%MODULENAME%/REPORT_SENDING_CANCELED'));
 		}
 	}.bind(this));
 }

@@ -2,6 +2,7 @@
 
 var
 	_ = require('underscore'),
+	ko = require('knockout'),
 
 	TextUtils = require('%PathToCoreWebclientModule%/js/utils/Text.js'),
 	Utils = require('%PathToCoreWebclientModule%/js/utils/Common.js'),
@@ -16,11 +17,8 @@ var
  * @constructor for object that display Sensitivity button on Compose
  */
 function CComposeSendButtonView() {
-	this.sId = '%ModuleName%';
-	this.scheduleCommand = Utils.createCommand(this, this.scheduleSending, function () {
-		//isEnableSending
-		return true;
-	}.bind(this));
+	this.oCompose = null;
+	this.disableAutosave = ko.observable(false);
 }
 
 CComposeSendButtonView.prototype.ViewTemplate = '%ModuleName%_ComposeSendButtonView';
@@ -28,6 +26,9 @@ CComposeSendButtonView.prototype.ViewTemplate = '%ModuleName%_ComposeSendButtonV
 CComposeSendButtonView.prototype.assignComposeExtInterface = function (oCompose)
 {
 	this.oCompose = oCompose;
+	this.scheduleCommand = Utils.createCommand(this, this.scheduleSending, function () {
+		return this.oCompose ? this.oCompose.isEnableSending() && this.oCompose.isEnableSaving() : false;
+	}.bind(this));
 };
 
 CComposeSendButtonView.prototype.scheduleSending = function () {
@@ -36,7 +37,10 @@ CComposeSendButtonView.prototype.scheduleSending = function () {
 	} else if (_.isFunction(this.oCompose && this.oCompose.getRecipientsEmpty) && this.oCompose.getRecipientsEmpty()) {
 		Popups.showPopup(AlertPopup, [TextUtils.i18n('%MODULENAME%/ERROR_RECIPIENTS_EMPTY')]);
 	} else {
-		Popups.showPopup(ScheduleSendingPopup, [this.oCompose]);
+		this.disableAutosave(true);
+		Popups.showPopup(ScheduleSendingPopup, [this.oCompose, function () {
+			this.disableAutosave(false);
+		}.bind(this)]);
 	}
 };
 
