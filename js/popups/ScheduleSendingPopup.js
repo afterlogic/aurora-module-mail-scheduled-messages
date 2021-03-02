@@ -5,6 +5,7 @@ var
 	ko = require('knockout'),
 	moment = require('moment'),
 
+	CalendarUtils = require('%PathToCoreWebclientModule%/js/utils/Calendar.js'),
 	DateUtils = require('%PathToCoreWebclientModule%/js/utils/Date.js'),
 	TextUtils = require('%PathToCoreWebclientModule%/js/utils/Text.js'),
 	Utils = require('%PathToCoreWebclientModule%/js/utils/Common.js'),
@@ -15,8 +16,6 @@ var
 	ModulesManager = require('%PathToCoreWebclientModule%/js/ModulesManager.js'),
 	Screens = require('%PathToCoreWebclientModule%/js/Screens.js'),
 	UserSettings = require('%PathToCoreWebclientModule%/js/Settings.js'),
-
-	CalendarUtils = require('modules/CalendarWebclient/js/utils/Calendar.js'),
 
 	ScheduleUtils = require('modules/%ModuleName%/js/utils/Schedule.js'),
 
@@ -88,7 +87,7 @@ CScheduleSendingPopup.prototype.createDatePickerObject = function (oElement, fSe
 		dayNamesMin: TextUtils.i18n('COREWEBCLIENT/LIST_DAY_NAMES_MIN').split(' '),
 		nextText: '',
 		prevText: '',
-		// firstDay: Settings.WeekStartsOn,
+		firstDay: ModulesManager.run('CalendarWebclient', 'getWeekStartsOn', []),
 		showOn: 'both',
 		buttonText: '',
 		buttonImage: './static/styles/images/calendar-icon.png',
@@ -177,6 +176,11 @@ CScheduleSendingPopup.prototype.schedule = function () {
 
 CScheduleSendingPopup.prototype.scheduleAfterAllUploaded = function () {
 	if (_.isFunction(this.oCompose && this.oCompose.getSendSaveParameters)) {
+		if (this.scheduledTime() < moment().unix()) {
+			Screens.showError(TextUtils.i18n('%MODULENAME%/ERROR_LATER_SCHEDULED_TIME'));
+			return;
+		}
+
 		var oParameters = this.oCompose.getSendSaveParameters();
 		if (oParameters.DraftUid && _.isFunction(this.oCompose && this.oCompose.getDraftFolderFullName)) {
 			oParameters.DraftFolder = this.oCompose.getDraftFolderFullName(oParameters.AccountID);

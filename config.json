@@ -7,68 +7,15 @@
 		[
 			{
 				"DayOfWeek": "today",
-				"Hour": "18:00"
+				"Hour": "18"
 			},
 			{
 				"DayOfWeek": "tomorrow",
-				"Hour": "13"
-			},
-			{
-				"DayOfWeek": "monday",
-				"Hour": "10"
-			}
-		],
-		"array"
-	],
-	"PredefinedSchedule_2": [
-		[
-			{
-				"DayOfWeek": "today",
-				"Hour": "18:00"
-			},
-			{
-				"DayOfWeek": "today",
-				"Hour": "8 AM"
-			},
-			{
-				"DayOfWeek": "tomorrow",
-				"Hour": "13"
-			},
-			{
-				"DayOfWeek": "tomorrow",
-				"Hour": "6 PM"
-			},
-			{
-				"DayOfWeek": "sunday",
 				"Hour": "8"
 			},
 			{
 				"DayOfWeek": "monday",
-				"Hour": "10"
-			},
-			{
-				"DayOfWeek": "tuesday",
 				"Hour": "8"
-			},
-			{
-				"DayOfWeek": "wednesday",
-				"Hour": "10"
-			},
-			{
-				"DayOfWeek": "thursday",
-				"Hour": "8"
-			},
-			{
-				"DayOfWeek": "friday",
-				"Hour": "10"
-			},
-			{
-				"DayOfWeek": "saturday",
-				"Hour": "8"
-			},
-			{
-				"DayOfWeek": "saturday",
-				"Hour": "13"
 			}
 		],
 		"array"

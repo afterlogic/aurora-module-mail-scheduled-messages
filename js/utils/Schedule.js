@@ -16,7 +16,7 @@ var
 
 function getPredefinedHour(oScheduleItem) {
 	var iHour = Types.pInt(oScheduleItem.Hour);
-	if (Types.isString(oScheduleItem.Hour) && oScheduleItem.Hour.toLowerCase().indexOf('pm') !== -1) {
+	if (iHour <= 12 && Types.isString(oScheduleItem.Hour) && oScheduleItem.Hour.toLowerCase().indexOf('pm') !== -1) {
 		iHour += 12;
 	}
 	return iHour;
@@ -52,40 +52,40 @@ function getPredefinedMoment(oScheduleItem, iHour) {
 function getWhenLabel(oMoment, iHour) {
 	var
 		sWhenLabel = '',
+		oDaysTexts = {
+			0: TextUtils.i18n('%MODULENAME%/LABEL_WHEN_SUNDAY'),
+			1: TextUtils.i18n('%MODULENAME%/LABEL_WHEN_MONDAY'),
+			2: TextUtils.i18n('%MODULENAME%/LABEL_WHEN_TUESDAY'),
+			3: TextUtils.i18n('%MODULENAME%/LABEL_WHEN_WEDNESDAY'),
+			4: TextUtils.i18n('%MODULENAME%/LABEL_WHEN_THURSDAY'),
+			5: TextUtils.i18n('%MODULENAME%/LABEL_WHEN_FRIDAY'),
+			6: TextUtils.i18n('%MODULENAME%/LABEL_WHEN_SATURDAY')
+		},
 		oNowMoment = moment()
 	;
+
 	if (oNowMoment.date() === oMoment.date()) {
-		sWhenLabel = 'Today';
+		sWhenLabel = TextUtils.i18n('%MODULENAME%/LABEL_WHEN_TODAY');
 	} else if (oNowMoment.add(1, 'd').date() === oMoment.date()) {
-		sWhenLabel = 'Tomorrow';
+		sWhenLabel = TextUtils.i18n('%MODULENAME%/LABEL_WHEN_TOMORROW');
 	} else {
-		sWhenLabel = oMoment.format('dddd');
+		sWhenLabel = oDaysTexts[oMoment.day()];
 	}
 
 	if (iHour >= 0 && iHour <= 3) {
-		sWhenLabel += ' night';
+		sWhenLabel += ' ' + TextUtils.i18n('%MODULENAME%/LABEL_WHEN_NIGHT');
 	} else if (iHour >= 4 && iHour <= 11) {
-		sWhenLabel += ' morning';
+		sWhenLabel += ' ' + TextUtils.i18n('%MODULENAME%/LABEL_WHEN_MORNING');
 	} else if (iHour >= 12 && iHour <= 16) {
-		sWhenLabel += ' afternoon';
+		sWhenLabel += ' ' + TextUtils.i18n('%MODULENAME%/LABEL_WHEN_AFTERNOON');
 	} else if (iHour >= 16 && iHour <= 23) {
-		sWhenLabel += ' evening';
+		sWhenLabel += ' ' + TextUtils.i18n('%MODULENAME%/LABEL_WHEN_EVENING');
 	}
+
 	return sWhenLabel;
 }
 
 ScheduleUtils.getPredefinedOptions = function () {
-	// var oDatTime = moment().set('minute', 0).set('second', 0);
-	// for(var i=0; i<24; i++)
-	// {
-	// 	oDatTime.set('hour', i);
-	// 	console.log(oDatTime.format('hh:mm a'))
-	// }
-	// 0-3 - night
-	// 4-11 - morning
-	// 12-16 - day
-	// 17-11 - evening
-
 	var aOptions = [];
 	if (_.isArray(Settings.PredefinedSchedule)) {
 		_.each(Settings.PredefinedSchedule, function (oScheduleItem) {
