@@ -7,12 +7,15 @@ var
 	TextUtils = require('%PathToCoreWebclientModule%/js/utils/Text.js'),
 	Types = require('%PathToCoreWebclientModule%/js/utils/Types.js'),
 
+	AlertPopup = require('%PathToCoreWebclientModule%/js/popups/AlertPopup.js'),
 	App = require('%PathToCoreWebclientModule%/js/App.js'),
 	ModulesManager = require('%PathToCoreWebclientModule%/js/ModulesManager.js'),
+	Popups = require('%PathToCoreWebclientModule%/js/Popups.js'),
 	Screens = require('%PathToCoreWebclientModule%/js/Screens.js'),
 
 	ComposeUtils = require('modules/MailWebclient/js/utils/Compose.js'),
 
+	ConfirmAnotherMessageComposedPopup = require('modules/%ModuleName%/js/popups/ConfirmAnotherMessageComposedPopup.js'),
 	Schedule = require('modules/%ModuleName%/js/utils/Schedule.js'),
 
 	Settings = require('modules/%ModuleName%/js/Settings.js')
@@ -86,7 +89,37 @@ CScheduledInfoView.prototype.doAfterPopulatingMessage = function (oMessageProps)
 
 CScheduledInfoView.prototype.cancelSending = function () {
 	if (this.iAccountId !== 0) {
-		ComposeUtils.composeMessageFromDrafts(this.iAccountId, this.sFolderFullName, this.sMessageUid);
+		var oCompose = Popups.getOpenedMinimizedPopup('MailWebclient_ComposePopup');
+		if (oCompose && oCompose.hasUnsavedChanges())
+		{
+			oCompose.maximize();
+			oCompose.disableAutosave(true);
+			Popups.showPopup(ConfirmAnotherMessageComposedPopup, [function (sAnswer) {
+				switch (sAnswer)
+				{
+					case Enums.AnotherMessageComposedAnswer.Discard:
+						oCompose.commit();
+						ComposeUtils.composeMessageFromDrafts(this.iAccountId, this.sFolderFullName, this.sMessageUid);
+						break;
+					case Enums.AnotherMessageComposedAnswer.SaveAsDraft:
+						if (oCompose.hasUnsavedChanges())
+						{
+							oCompose.executeSave(true, false);
+						}
+						ComposeUtils.composeMessageFromDrafts(this.iAccountId, this.sFolderFullName, this.sMessageUid);
+						break;
+					case Enums.AnotherMessageComposedAnswer.Cancel:
+						Screens.showLoading(TextUtils.i18n('%MODULENAME%/ERROR_SENDING_CANCELED'));
+						setTimeout(function () {
+							Screens.hideLoading();
+						}, 10000);
+						break;
+				}
+				oCompose.disableAutosave(false);
+			}.bind(this)]);
+		} else {
+			ComposeUtils.composeMessageFromDrafts(this.iAccountId, this.sFolderFullName, this.sMessageUid);
+		}
 	}
 };
 
