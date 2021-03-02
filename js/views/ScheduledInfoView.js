@@ -25,6 +25,9 @@ function CScheduledInfoView() {
 
 	this.scheduledText = ko.observable('');
 	this.visible = ko.observable(false);
+	this.disableAllSendTools = ko.computed(function () {
+		return this.visible();
+	}, this);
 
 	this.oMessagePane = null;
 
