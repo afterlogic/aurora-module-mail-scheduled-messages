@@ -29,6 +29,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 		$this->oManager = new Manager($this);
 
 		$this->subscribeEvent('Mail::GetFolders::before', array($this, 'onBeforeGetFolders'));
+		$this->subscribeEvent('Mail::GetFolders::after', array($this, 'onAfterGetFolders'));
 		$this->subscribeEvent('Mail::GetMessage::after', array($this, 'onAfterGetMessage'));
 		$this->subscribeEvent('Mail::MoveMessages::after', array($this, 'onMoveOrDeleteMessages'));
 		$this->subscribeEvent('Mail::DeleteMessages::after', array($this, 'onMoveOrDeleteMessages'));
@@ -69,6 +70,35 @@ class Module extends \Aurora\System\Module\AbstractModule
 				catch (\Exception $oException) {}
 			}
 		}
+	}
+
+	public function onAfterGetFolders(&$aArgs, &$mResult)
+	{
+		$oFolderCollection =& $mResult['Folders'];
+
+		$aList =& $oFolderCollection->GetAsArray();
+		$iSentPos = 0;
+		foreach ($aList as $iKey => $oFolder)
+		{
+			if ($oFolder->getType() === \Aurora\Modules\Mail\Enums\FolderType::Sent)
+			{
+				$iSentPos = $iKey;
+				break;
+			}
+		}
+
+		$oScheduledFolder = null;
+		foreach ($aList as $iKey => $oFolder)
+		{
+			if ($oFolder->getName() === $this->sScheduledFolderName)
+			{
+				$oScheduledFolder = $oFolder;
+				unset($aList[$iKey]);
+				break;
+			}
+		}
+
+		array_splice($aList, $iSentPos + 1, 0, [$oScheduledFolder]);
 	}
 
 	public function onAfterGetMessage($aArgs, &$mResult)
