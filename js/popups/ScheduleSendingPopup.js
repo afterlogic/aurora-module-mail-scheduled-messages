@@ -45,7 +45,10 @@ function CScheduleSendingPopup() {
 	this.selectedDate = ko.observable('');
 	this.selectedTime = ko.observable('');
 	this.selectedTime.subscribe(function () {
-		this.selectDatetime();
+		if (this.selectedTime() !== '')
+		{
+			this.selectDatetime();
+		}
 	}, this);
 	this.lockSelectStartEndDate = ko.observable(false);
 	this.initializeDatePickers();
@@ -131,6 +134,9 @@ CScheduleSendingPopup.prototype.getDateTime = function (oInput, sTime) {
 	if (aTime.length === 2 && oDate !== null) {
 		oDate.setHours(aTime[0]);
 		oDate.setMinutes(aTime[1]);
+	} else if (oDate !== null) {
+		oDate.setHours(8);
+		oDate.setMinutes(0);
 	}
 
 	return oDate;
@@ -150,8 +156,11 @@ CScheduleSendingPopup.prototype.getDateWithoutYearIfMonthWord = function (sDate)
 };
 
 CScheduleSendingPopup.prototype.selectScheduledTime = function (iUnix) {
+	this.dateDom().val('');
+	this.selectedDate('');
+	this.selectedTime('');
 	if (this.scheduledTime() === iUnix) {
-		this.selectDatetime();
+		this.scheduledTime(0);
 	} else {
 		this.scheduledTime(iUnix);
 	}
