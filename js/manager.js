@@ -38,6 +38,7 @@ module.exports = function (oAppData) {
 			oScheduledFolder.usedAs = ko.observable(TextUtils.i18n('%MODULENAME%/LABEL_USED_AS_SCHEDULED'));
 			oScheduledFolder.setDisableMoveTo(true);
 			oScheduledFolder.setDisableMoveFrom(true);
+			oScheduledFolder.setShowTotalInsteadUnseenCount(true);
 		} else {
 			Settings.setCurrentScheduledFolder('');
 		}
