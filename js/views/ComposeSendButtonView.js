@@ -17,6 +17,7 @@ var
  * @constructor for object that display Sensitivity button on Compose
  */
 function CComposeSendButtonView() {
+	this.bSendButton = true;
 	this.oCompose = null;
 	this.disableAutosave = ko.observable(false);
 }
