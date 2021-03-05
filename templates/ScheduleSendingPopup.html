@@ -19,11 +19,11 @@
 			<div class="row row_select_datetime row_select_datetime_hint">
 				<span data-bind="i18n: {'key': '%MODULENAME%/LABEL_SELECT_DATE_AND_TIME'}"></span>
 			</div>
-			<div class="row row_select_datetime">
-				<div style="display: inline-block; width: 70%;">
+			<div class="row row_select_datetime" style="display: flex;">
+				<div style="white-space: nowrap; flex-grow: 1;">
 					<input class="input input_date" type="text" spellcheck="false" readonly="readonly" data-bind="initDom: dateDom"/>
 				</div>
-				<div class="custom_selector" style="display: inline-block; width: 30%;"
+				<div class="custom_selector" style="max-width: 100px;"
 						data-bind="customSelect: {'control': false, 'selected': 'selected', 'input': true, 'options': timeOptions(), 'timeOptions': timeOptions, value: selectedTime, optionsText: 'text', optionsValue: 'value'}">
                     <input class="input input_time" spellcheck="false" type="text"
                            data-bind="value: selectedTime"/>
