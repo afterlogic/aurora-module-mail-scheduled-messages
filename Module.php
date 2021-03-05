@@ -78,9 +78,20 @@ class Module extends \Aurora\System\Module\AbstractModule
 
 		$aList =& $oFolderCollection->GetAsArray();
 		$iSentPos = 0;
+		$sNamespace = $oFolderCollection->getNamespace();
+		if (!empty($sNamespace))
+		{
+			$sNamespaceFolderName = substr($sNamespace, 0, -1);
+			$oNamespaceFolder =& $oFolderCollection->getFolder($sNamespaceFolderName, true);
+			if ($oNamespaceFolder)
+			{
+				$aList =& $oNamespaceFolder->getSubFolders()->GetAsArray();
+			}
+		}
+
 		foreach ($aList as $iKey => $oFolder)
 		{
-			if ($oFolder->getType() === \Aurora\Modules\Mail\Enums\FolderType::Sent)
+			if ($oFolder->getType() == \Aurora\Modules\Mail\Enums\FolderType::Sent)
 			{
 				$iSentPos = $iKey;
 				break;
@@ -98,7 +109,10 @@ class Module extends \Aurora\System\Module\AbstractModule
 			}
 		}
 
-		array_splice($aList, $iSentPos + 1, 0, [$oScheduledFolder]);
+		if ($oScheduledFolder)
+		{
+			array_splice($aList, $iSentPos + 1, 0, [$oScheduledFolder]);
+		}
 	}
 
 	public function onAfterGetMessage($aArgs, &$mResult)
