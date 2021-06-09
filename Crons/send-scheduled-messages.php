@@ -6,10 +6,10 @@ require_once __DIR__ . "/../../../system/autoload.php";
 set_time_limit(0);
 date_default_timezone_set("UTC");
 
-if (PHP_SAPI !== 'cli')
-{
-	exit("Use the console for running this script");
-}
+// if (PHP_SAPI !== 'cli')
+// {
+	// exit("Use the console for running this script");
+// }
 
 $oMailScheduledMessagesModule = \Aurora\Modules\MailScheduledMessages\Module::getInstance();
 $oMailModule = \Aurora\Modules\Mail\Module::getInstance();
