@@ -13,14 +13,16 @@ class CreateMailScheduledMessagesTable extends Migration
      */
     public function up()
     {
-        Capsule::schema()->create('mail_scheduled_messages', function (Blueprint $table) {
-            $table->id('id');
-            $table->bigInteger('account_id');
-            $table->text('folder_full_name');
-            $table->string('message_uid');
-            $table->integer('schedule_timestamp');
-            $table->timestamps();
-        });
+        if (!Capsule::schema()->hasTable('mail_scheduled_messages')) {
+            Capsule::schema()->create('mail_scheduled_messages', function (Blueprint $table) {
+                $table->id('id');
+                $table->bigInteger('account_id');
+                $table->text('folder_full_name');
+                $table->string('message_uid');
+                $table->integer('schedule_timestamp');
+                $table->timestamps();
+            });
+        }
     }
 
     /**
