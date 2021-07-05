@@ -157,14 +157,14 @@ class Module extends \Aurora\System\Module\AbstractModule
 	 */
 	public function onAfterCreateTables($aParams, &$mResult)
 	{
-		if ($mResult)
-		{
-			$mResult = $this->oManager->createTablesFromFile();
-			if ($mResult)
-			{
-				$mResult = $this->oManager->updateTables();
-			}
-		}
+		// if ($mResult)
+		// {
+		// 	$mResult = $this->oManager->createTablesFromFile();
+		// 	if ($mResult)
+		// 	{
+		// 		$mResult = $this->oManager->updateTables();
+		// 	}
+		// }
 	}
 
 	public function GetSettings()
