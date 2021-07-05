@@ -16,6 +16,8 @@ namespace Aurora\Modules\MailScheduledMessages;
  */
 class Module extends \Aurora\System\Module\AbstractModule
 {
+	protected $aRequireModules = ['Mail'];
+
 	public $oManager = null;
 
 	public $sScheduledFolderName = 'Scheduled';
