@@ -245,8 +245,8 @@ class Module extends \Aurora\System\Module\AbstractModule
 				catch (\Exception $oException) {}
 			}
 
-			$this->oManager->removeMessage($oAccount->EntityId, $FolderFullName, $iNewUid);
-			$this->oManager->addMessage($oAccount->EntityId, $FolderFullName, $iNewUid, $ScheduleDateTime);
+			$this->oManager->removeMessage($oAccount->Id, $FolderFullName, $iNewUid);
+			$this->oManager->addMessage($oAccount->Id, $FolderFullName, $iNewUid, $ScheduleDateTime);
 		}
 
 		return $iNewUid;
