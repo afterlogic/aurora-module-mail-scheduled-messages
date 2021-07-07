@@ -24,6 +24,12 @@ class Module extends \Aurora\System\Module\AbstractModule
 
 	public $oMailModuleMailManager = null;
 
+	/**
+     *
+     * @var array
+     */
+	protected $aRequireModules = ['Mail'];
+
 	public function init()
 	{
 		$this->oManager = new Manager($this);
