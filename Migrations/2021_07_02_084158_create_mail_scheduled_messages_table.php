@@ -20,7 +20,9 @@ class CreateMailScheduledMessagesTable extends Migration
                 $table->text('folder_full_name');
                 $table->string('message_uid');
                 $table->integer('schedule_timestamp');
-                $table->timestamps();
+                $table->timestamp(\Aurora\System\Classes\Model::CREATED_AT)->nullable();
+                $table->timestamp(\Aurora\System\Classes\Model::UPDATED_AT)->nullable();
+
             });
         }
     }
