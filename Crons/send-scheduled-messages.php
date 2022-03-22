@@ -20,26 +20,31 @@ $aMessagesForSend = $oMailScheduledMessagesModule->Decorator()->GetMessagesForSe
 foreach ($aMessagesForSend as $aMessageForSend)
 {
 	$mSendResult = false;
+	$directMessageToStreamResult = false;
 	$oAccount = $oMailModule->GetAccount($aMessageForSend['AccountId']);
 
-	if ($oMailModule->getMailManager()->directMessageToStream($oAccount,
-		function ($rMessageResourse, $sContentType, $sFileName, $sMimeIndex = '') use ($oAccount, &$mSendResult) {
-			if (\is_resource($rMessageResourse))
-			{
-				$mSendResult = sendMessage($oAccount, $rMessageResourse);
-				\fclose($rMessageResourse);
-			}
-	}, $aMessageForSend['FolderFullName'], $aMessageForSend['MessageUid']))
-	{
-		if ($mSendResult)
-		{
-			$oNamespace = \Aurora\Modules\Mail\Module::getInstance()->getMailManager()->getFoldersNamespace($oAccount);
-			$sNamespace = $oNamespace ? $oNamespace->GetPersonalNamespace() : '';
-			$sSentFolderFullName = $sNamespace . 'Sent';
+	try {
+		$directMessageToStreamResult = $oMailModule->getMailManager()->directMessageToStream($oAccount,
+			function ($rMessageResourse, $sContentType, $sFileName, $sMimeIndex = '') use ($oAccount, &$mSendResult) {
+				if (\is_resource($rMessageResourse))
+				{
+					
+					$mSendResult = sendMessage($oAccount, $rMessageResourse);
+					\fclose($rMessageResourse);
+				}
+		}, $aMessageForSend['FolderFullName'], $aMessageForSend['MessageUid']);
+	} catch (\Exception $oEx) {
+		\Aurora\System\Api::LogException($oEx);
+	}
 
-			$oMailModule->Decorator()->MoveMessages($aMessageForSend['AccountId'], $aMessageForSend['FolderFullName'], $sSentFolderFullName,$aMessageForSend['MessageUid']);
-			$oMailScheduledMessagesModule->Decorator()->RemoveMessage($aMessageForSend['AccountId'], $aMessageForSend['FolderFullName'], $aMessageForSend['MessageUid']);
-		}
+	if ($directMessageToStreamResult && $mSendResult)
+	{
+		$oNamespace = \Aurora\Modules\Mail\Module::getInstance()->getMailManager()->getFoldersNamespace($oAccount);
+		$sNamespace = $oNamespace ? $oNamespace->GetPersonalNamespace() : '';
+		$sSentFolderFullName = $sNamespace . 'Sent';
+
+		$oMailModule->Decorator()->MoveMessages($aMessageForSend['AccountId'], $aMessageForSend['FolderFullName'], $sSentFolderFullName,$aMessageForSend['MessageUid']);
+		$oMailScheduledMessagesModule->Decorator()->RemoveMessage($aMessageForSend['AccountId'], $aMessageForSend['FolderFullName'], $aMessageForSend['MessageUid']);
 	}
 	else
 	{
