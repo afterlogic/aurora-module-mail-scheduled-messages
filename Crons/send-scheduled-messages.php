@@ -48,7 +48,7 @@ foreach ($aMessagesForSend as $aMessageForSend)
 	}
 	else
 	{
-		$oMailScheduledMessagesModule->Decorator()->RemoveMessage($aMessageForSend['AccountId'], $aMessageForSend['FolderFullName'], $aMessageForSend['MessageUid']);
+//		$oMailScheduledMessagesModule->Decorator()->RemoveMessage($aMessageForSend['AccountId'], $aMessageForSend['FolderFullName'], $aMessageForSend['MessageUid']);
 	}
 }
 
