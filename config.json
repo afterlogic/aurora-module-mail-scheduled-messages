@@ -1,31 +1,31 @@
 {
-  "Disabled": [
-    false,
-    "bool"
-  ],
-  "Disabled_Description": [
-    "",
-    "string"
-  ],
-  "PredefinedSchedule": [
-    [
-      {
-        "DayOfWeek": "today",
-        "Hour": "18"
-      },
-      {
-        "DayOfWeek": "tomorrow",
-        "Hour": "8"
-      },
-      {
-        "DayOfWeek": "monday",
-        "Hour": "8"
-      }
-    ],
-    "array"
-  ],
-  "PredefinedSchedule_Description": [
-    "",
-    "string"
-  ]
+	"Disabled": [
+		false,
+		"bool"
+	],
+	"Disabled_Description": [
+		"",
+		"string"
+	],
+	"PredefinedSchedule": [
+		[
+			{
+				"DayOfWeek": "today",
+				"Hour": "18"
+			},
+			{
+				"DayOfWeek": "tomorrow",
+				"Hour": "8"
+			},
+			{
+				"DayOfWeek": "monday",
+				"Hour": "8"
+			}
+		],
+		"array"
+	],
+	"PredefinedSchedule_Description": [
+		"",
+		"string"
+	]
 }
