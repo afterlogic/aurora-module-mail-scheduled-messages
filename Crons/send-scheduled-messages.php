@@ -1,5 +1,7 @@
 <?php
 
+use Aurora\System\EventEmitter;
+
 require_once __DIR__ . "/../../../system/autoload.php";
 
 \Aurora\System\Api::Init(true);
@@ -221,6 +223,17 @@ function sendMessage($oAccount, $rStream)
 				{
 					$sRcptEmail = $oEmail->GetEmail();
 					$oSmtpClient->Rcpt($sRcptEmail);
+				}
+
+				$aEmails = array();
+				$oRcpt->ForeachList(function ($oEmail) use (&$aEmails) {
+					$aEmails[strtolower($oEmail->GetEmail())] = trim($oEmail->GetDisplayName());
+				});
+
+				if (\is_array($aEmails))
+				{
+					$aArgs = ['Emails' => $aEmails];
+					EventEmitter::getInstance()->emit('Mail', 'AfterUseEmails', $aArgs);
 				}
 
 				\rewind($rMessageStream);
