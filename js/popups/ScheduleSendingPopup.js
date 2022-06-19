@@ -92,9 +92,7 @@ CScheduleSendingPopup.prototype.createDatePickerObject = function (oElement, fSe
 		prevText: '',
 		firstDay: ModulesManager.run('CalendarWebclient', 'getWeekStartsOn', []),
 		showOn: 'both',
-		buttonText: '',
-		buttonImage: './static/styles/images/calendar-icon.png',
-		buttonImageOnly: true,
+		buttonText: ' ',
 		dateFormat: this.dateFormatDatePicker,
 		onSelect: fSelect
 	});
