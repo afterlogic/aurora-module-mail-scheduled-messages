@@ -232,7 +232,7 @@ function sendMessage($oAccount, $rStream)
 
 				if (\is_array($aEmails))
 				{
-					$aArgs = ['Emails' => $aEmails];
+					$aArgs = ['IdUser' => $oAccount->IdUser, 'Emails' => $aEmails];
 					EventEmitter::getInstance()->emit('Mail', 'AfterUseEmails', $aArgs);
 				}
 
