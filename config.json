@@ -4,7 +4,7 @@
 		"bool"
 	],
 	"Disabled_Description": [
-		"",
+		"If true, the module is used in mobile version of the interface",
 		"string"
 	],
 	"PredefinedSchedule": [
@@ -25,7 +25,7 @@
 		"array"
 	],
 	"PredefinedSchedule_Description": [
-		"",
+		"Defines a list of presets used when scheduling a message for sending out",
 		"string"
 	]
 }
