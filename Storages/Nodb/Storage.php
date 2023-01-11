@@ -15,7 +15,7 @@ namespace Aurora\Modules\MailScheduledMessages\Storages\Nodb;
  * @package MailScheduledMessages
  * @subpackage Storages
  */
-class Storage extends Aurora\Modules\MailScheduledMessages\Storages\Storage
+class Storage extends \Aurora\Modules\MailScheduledMessages\Storages\Storage
 {
 	/**
 	 *
