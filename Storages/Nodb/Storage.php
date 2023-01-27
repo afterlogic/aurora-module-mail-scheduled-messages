@@ -17,12 +17,12 @@ namespace Aurora\Modules\MailScheduledMessages\Storages\Nodb;
  */
 class Storage extends \Aurora\Modules\MailScheduledMessages\Storages\Storage
 {
-	/**
-	 *
-	 * @param \Aurora\System\Managers\AbstractManager $oManager
-	 */
-	public function __construct(\Aurora\System\Managers\AbstractManager &$oManager)
-	{
-		parent::__construct($oManager);
-	}
+    /**
+     *
+     * @param \Aurora\System\Managers\AbstractManager $oManager
+     */
+    public function __construct(\Aurora\System\Managers\AbstractManager &$oManager)
+    {
+        parent::__construct($oManager);
+    }
 }

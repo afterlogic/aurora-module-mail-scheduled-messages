@@ -14,12 +14,12 @@ namespace Aurora\Modules\MailScheduledMessages\Storages;
  */
 class Storage extends \Aurora\System\Managers\AbstractStorage
 {
-	/**
-	 *
-	 * @param \Aurora\System\Managers\AbstractManager $oManager
-	 */
-	public function __construct(\Aurora\System\Managers\AbstractManager &$oManager)
-	{
-		parent::__construct($oManager);
-	}
+    /**
+     *
+     * @param \Aurora\System\Managers\AbstractManager $oManager
+     */
+    public function __construct(\Aurora\System\Managers\AbstractManager &$oManager)
+    {
+        parent::__construct($oManager);
+    }
 }

@@ -14,19 +14,19 @@ namespace Aurora\Modules\MailScheduledMessages;
  */
 class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 {
-	public function __construct(\Aurora\System\Module\AbstractModule $oModule = null)
-	{
-		parent::__construct($oModule, new Storages\Db\Storage($this));
-	}
+    public function __construct(\Aurora\System\Module\AbstractModule $oModule = null)
+    {
+        parent::__construct($oModule, new Storages\Db\Storage($this));
+    }
 
-	/**
-	 * @return array|bool
-	 */
-	public function getMessagesForSend($iTimestamp)
-	{
-		$aMessagesForSend = $this->oStorage->getMessagesForSend($iTimestamp);
+    /**
+     * @return array|bool
+     */
+    public function getMessagesForSend($iTimestamp)
+    {
+        $aMessagesForSend = $this->oStorage->getMessagesForSend($iTimestamp);
         return $aMessagesForSend;
-	}
+    }
 
     /**
      * @param int $iAccountID
@@ -46,7 +46,7 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
         return $this->oStorage->updateMessageScheduleTimestamp($iAccountID, $sFolderFullName, $sMessageUid, $iTimestamp);
     }
 
-	public function getMessage($iAccountID, $sFolderFullName, $sMessageUid)
+    public function getMessage($iAccountID, $sFolderFullName, $sMessageUid)
     {
         return $this->oStorage->getMessage($iAccountID, $sFolderFullName, $sMessageUid);
     }
@@ -57,70 +57,64 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
     }
 
     /**
-	 * Creates tables required for module work by executing create.sql file.
-	 *
-	 * @return boolean
-	 */
-	public function createTablesFromFile()
-	{
-		$bResult = false;
+     * Creates tables required for module work by executing create.sql file.
+     *
+     * @return boolean
+     */
+    public function createTablesFromFile()
+    {
+        $bResult = false;
 
-		try
-		{
-			$sFilePath = dirname(__FILE__) . '/Storages/Db/sql/create.sql';
-			$bResult = \Aurora\System\Managers\Db::getInstance()->executeSqlFile($sFilePath);
-		}
-		catch (\Aurora\System\Exceptions\BaseException $oException)
-		{
-			$this->setLastException($oException);
-		}
+        try {
+            $sFilePath = dirname(__FILE__) . '/Storages/Db/sql/create.sql';
+            $bResult = \Aurora\System\Managers\Db::getInstance()->executeSqlFile($sFilePath);
+        } catch (\Aurora\System\Exceptions\BaseException $oException) {
+            $this->setLastException($oException);
+        }
 
-		return $bResult;
-	}
+        return $bResult;
+    }
 
-	/**
-	 * Temp.
-	 *
-	 * @return boolean
-	 */
-	public function insertDataFromFile()
-	{
-		$bResult = false;
+    /**
+     * Temp.
+     *
+     * @return boolean
+     */
+    public function insertDataFromFile()
+    {
+        $bResult = false;
 
-		try
-		{
-			$sFilePath = dirname(__FILE__) . '/Storages/Db/sql/insert.sql';
-			$bResult = \Aurora\System\Managers\Db::getInstance()->executeSqlFile($sFilePath);
-		}
-		catch (\Aurora\System\Exceptions\BaseException $oException)
-		{
-			$this->setLastException($oException);
-		}
+        try {
+            $sFilePath = dirname(__FILE__) . '/Storages/Db/sql/insert.sql';
+            $bResult = \Aurora\System\Managers\Db::getInstance()->executeSqlFile($sFilePath);
+        } catch (\Aurora\System\Exceptions\BaseException $oException) {
+            $this->setLastException($oException);
+        }
 
-		return $bResult;
-	}
+        return $bResult;
+    }
 
-	/**
-	 * Update tables required for module work by executing update.sql file.
-	 *
-	 * @return boolean
-	 */
-	public function updateTables()
-	{
-		return true;
+    /**
+     * Update tables required for module work by executing update.sql file.
+     *
+     * @return boolean
+     */
+    public function updateTables()
+    {
+        return true;
 
-//		$bResult = false;
+        //		$bResult = false;
 //
-//		try
-//		{
-//			$sFilePath = dirname(__FILE__) . '/Storages/Db/sql/update.sql';
-//			$bResult = \Aurora\System\Managers\Db::getInstance()->executeSqlFile($sFilePath);
-//		}
-//		catch (\Aurora\System\Exceptions\BaseException $oException)
-//		{
-//			$this->setLastException($oException);
-//		}
+        //		try
+        //		{
+        //			$sFilePath = dirname(__FILE__) . '/Storages/Db/sql/update.sql';
+        //			$bResult = \Aurora\System\Managers\Db::getInstance()->executeSqlFile($sFilePath);
+        //		}
+        //		catch (\Aurora\System\Exceptions\BaseException $oException)
+        //		{
+        //			$this->setLastException($oException);
+        //		}
 //
-//		return $bResult;
-	}
+        //		return $bResult;
+    }
 }

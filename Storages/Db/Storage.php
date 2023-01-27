@@ -14,72 +14,68 @@ namespace Aurora\Modules\MailScheduledMessages\Storages\Db;
  */
 class Storage extends \Aurora\Modules\MailScheduledMessages\Storages\Storage
 {
-	/**
-	 * @var CDbStorage $oConnection
-	 */
-	protected $oConnection;
+    /**
+     * @var CDbStorage $oConnection
+     */
+    protected $oConnection;
 
-	/**
-	 * @var CApiMinCommandCreatorMySQL
-	 */
-	protected $oCommandCreator;
+    /**
+     * @var CApiMinCommandCreatorMySQL
+     */
+    protected $oCommandCreator;
 
-	/**
-	 *
-	 * @param \Aurora\System\Managers\AbstractManager $oManager
-	 */
-	public function __construct(\Aurora\System\Managers\AbstractManager &$oManager)
-	{
-		parent::__construct($oManager);
-
-		$this->oConnection =& $oManager->GetConnection();
-		$this->oCommandCreator = new CommandCreator\MySQL();
-	}
-
-	/**
-	 * @return array|bool
-	 */
-	public function getMessagesForSend($iTimestamp)
-	{
-		$mResult = [];
-
-		if ($this->oConnection->Execute($this->oCommandCreator->getMessagesForSend($iTimestamp)))
-		{
-			$oRow = null;
-			while (false !== ($oRow = $this->oConnection->GetNextRecord()))
-			{
-				$mResult[] = [
-					'AccountId' => (int) $oRow->account_id,
-					'FolderFullName' => $oRow->folder_full_name,
-					'MessageUid' => $oRow->message_uid,
-					'ScheduleTimestamp' => (int) $oRow->schedule_timestamp
-				];
-			}
-			$this->oConnection->FreeResult();
-		}
-
-		return $mResult;
-	}
-
-	public function getMessage($iAccountID, $sFolderFullName, $sMessageUid)
+    /**
+     *
+     * @param \Aurora\System\Managers\AbstractManager $oManager
+     */
+    public function __construct(\Aurora\System\Managers\AbstractManager &$oManager)
     {
-		$mResult = false;
-        if ($this->oConnection->Execute($this->oCommandCreator->getMessage($iAccountID, $sFolderFullName, $sMessageUid)))
-		{
-			$oRow = $this->oConnection->GetNextRecord();
-			if ($oRow !== false)
-			{
-				$mResult = [
-					'AccountId' => (int) $oRow->account_id,
-					'FolderFullName' => $oRow->folder_full_name,
-					'MessageUid' => $oRow->message_uid,
-					'ScheduleTimestamp' => (int) $oRow->schedule_timestamp
-				];
-			}
-			$this->oConnection->FreeResult();
-		}
+        parent::__construct($oManager);
 
-		return $mResult;
+        $this->oConnection =& $oManager->GetConnection();
+        $this->oCommandCreator = new CommandCreator\MySQL();
+    }
+
+    /**
+     * @return array|bool
+     */
+    public function getMessagesForSend($iTimestamp)
+    {
+        $mResult = [];
+
+        if ($this->oConnection->Execute($this->oCommandCreator->getMessagesForSend($iTimestamp))) {
+            $oRow = null;
+            while (false !== ($oRow = $this->oConnection->GetNextRecord())) {
+                $mResult[] = [
+                    'AccountId' => (int) $oRow->account_id,
+                    'FolderFullName' => $oRow->folder_full_name,
+                    'MessageUid' => $oRow->message_uid,
+                    'ScheduleTimestamp' => (int) $oRow->schedule_timestamp
+                ];
+            }
+            $this->oConnection->FreeResult();
+        }
+
+        return $mResult;
+    }
+
+    public function getMessage($iAccountID, $sFolderFullName, $sMessageUid)
+    {
+        $mResult = false;
+        if ($this->oConnection->Execute($this->oCommandCreator->getMessage($iAccountID, $sFolderFullName, $sMessageUid))) {
+            $oRow = $this->oConnection->GetNextRecord();
+            if ($oRow !== false) {
+                $mResult = [
+                    'AccountId' => (int) $oRow->account_id,
+                    'FolderFullName' => $oRow->folder_full_name,
+                    'MessageUid' => $oRow->message_uid,
+                    'ScheduleTimestamp' => (int) $oRow->schedule_timestamp
+                ];
+            }
+            $this->oConnection->FreeResult();
+        }
+
+        return $mResult;
     }
 
     public function addMessage($iAccountID, $sFolderFullName, $sMessageUid, $iTimestamp)

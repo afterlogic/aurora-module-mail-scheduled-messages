@@ -14,15 +14,15 @@ namespace Aurora\Modules\MailScheduledMessages\Storages\Db;
  */
 class CommandCreator extends \Aurora\System\Db\AbstractCommandCreator
 {
-	/**
-	 * @return string
-	 */
-	public function getMessagesForSend($iTimestamp)
-	{
+    /**
+     * @return string
+     */
+    public function getMessagesForSend($iTimestamp)
+    {
         $sSql = "SELECT * FROM %smail_scheduled_messages WHERE schedule_timestamp < %d ORDER BY schedule_timestamp";
 
         return sprintf($sSql, $this->prefix(), $iTimestamp);
-	}
+    }
 
     /**
      * @param int $iAccountID

@@ -14,5 +14,4 @@ namespace Aurora\Modules\MailScheduledMessages\Storages\Db\CommandCreator;
  */
 class MySQL extends \Aurora\Modules\MailScheduledMessages\Storages\Db\CommandCreator
 {
-
 }
