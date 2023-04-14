@@ -25,7 +25,7 @@ class Module extends \Aurora\System\Module\AbstractModule
     public $oMailModuleAccountsManager = null;
 
     public $oMailModuleMailManager = null;
-    
+
     /**
      *
      * @return Module
@@ -191,8 +191,7 @@ class Module extends \Aurora\System\Module\AbstractModule
         $DraftUid = "",
         $CustomHeaders = [],
         $ScheduleDateTime = null
-    )
-    {
+    ) {
         $iNewUid = 0;
         \Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::NormalUser);
 
