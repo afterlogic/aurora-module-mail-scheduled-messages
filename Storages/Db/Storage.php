@@ -15,12 +15,12 @@ namespace Aurora\Modules\MailScheduledMessages\Storages\Db;
 class Storage extends \Aurora\Modules\MailScheduledMessages\Storages\Storage
 {
     /**
-     * @var CDbStorage $oConnection
+     * @var \Aurora\System\Db\Storage|false
      */
     protected $oConnection;
 
     /**
-     * @var CApiMinCommandCreatorMySQL
+     * @var CommandCreator\MySQL
      */
     protected $oCommandCreator;
 
@@ -46,6 +46,7 @@ class Storage extends \Aurora\Modules\MailScheduledMessages\Storages\Storage
         if ($this->oConnection->Execute($this->oCommandCreator->getMessagesForSend($iTimestamp))) {
             $oRow = null;
             while (false !== ($oRow = $this->oConnection->GetNextRecord())) {
+                /** @var \stdClass $oRow */
                 $mResult[] = [
                     'AccountId' => (int) $oRow->account_id,
                     'FolderFullName' => $oRow->folder_full_name,
@@ -65,6 +66,7 @@ class Storage extends \Aurora\Modules\MailScheduledMessages\Storages\Storage
         if ($this->oConnection->Execute($this->oCommandCreator->getMessage($iAccountID, $sFolderFullName, $sMessageUid))) {
             $oRow = $this->oConnection->GetNextRecord();
             if ($oRow !== false) {
+                /** @var \stdClass $oRow */
                 $mResult = [
                     'AccountId' => (int) $oRow->account_id,
                     'FolderFullName' => $oRow->folder_full_name,

@@ -13,12 +13,12 @@ date_default_timezone_set("UTC");
 // exit("Use the console for running this script");
 // }
 
-$oMailScheduledMessagesModule = \Aurora\Modules\MailScheduledMessages\Module::getInstance();
+$oMailScheduledMessagesModule = \Aurora\Modules\MailScheduledMessages\Module::Decorator();
 $oMailModule = \Aurora\Modules\Mail\Module::getInstance();
 
 $iTime = time();
 
-$aMessagesForSend = $oMailScheduledMessagesModule->Decorator()->GetMessagesForSend($iTime);
+$aMessagesForSend = $oMailScheduledMessagesModule->GetMessagesForSend($iTime);
 foreach ($aMessagesForSend as $aMessageForSend) {
     $mSendResult = false;
     $directMessageToStreamResult = false;
@@ -45,10 +45,10 @@ foreach ($aMessagesForSend as $aMessageForSend) {
         $sNamespace = $oNamespace ? $oNamespace->GetPersonalNamespace() : '';
         $sSentFolderFullName = $sNamespace . 'Sent';
 
-        $oMailModule->Decorator()->MoveMessages($aMessageForSend['AccountId'], $aMessageForSend['FolderFullName'], $sSentFolderFullName, $aMessageForSend['MessageUid']);
-        $oMailScheduledMessagesModule->Decorator()->RemoveMessage($aMessageForSend['AccountId'], $aMessageForSend['FolderFullName'], $aMessageForSend['MessageUid']);
+        \Aurora\Modules\Mail\Module::Decorator()->MoveMessages($aMessageForSend['AccountId'], $aMessageForSend['FolderFullName'], $sSentFolderFullName, $aMessageForSend['MessageUid']);
+        $oMailScheduledMessagesModule->RemoveMessage($aMessageForSend['AccountId'], $aMessageForSend['FolderFullName'], $aMessageForSend['MessageUid']);
     } else {
-        //		$oMailScheduledMessagesModule->Decorator()->RemoveMessage($aMessageForSend['AccountId'], $aMessageForSend['FolderFullName'], $aMessageForSend['MessageUid']);
+        //		$oMailScheduledMessagesModule->RemoveMessage($aMessageForSend['AccountId'], $aMessageForSend['FolderFullName'], $aMessageForSend['MessageUid']);
     }
 }
 

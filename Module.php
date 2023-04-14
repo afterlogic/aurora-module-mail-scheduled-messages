@@ -25,6 +25,15 @@ class Module extends \Aurora\System\Module\AbstractModule
     public $oMailModuleAccountsManager = null;
 
     public $oMailModuleMailManager = null;
+    
+    /**
+     *
+     * @return Module
+     */
+    public static function Decorator()
+    {
+        return parent::Decorator();
+    }
 
     public function init()
     {

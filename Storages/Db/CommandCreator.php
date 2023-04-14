@@ -28,7 +28,7 @@ class CommandCreator extends \Aurora\System\Db\AbstractCommandCreator
      * @param int $iAccountID
      * @param string $sFolderFullName
      * @param string $sMessageUid
-     * @param string $sDeviceId
+     * @param int $iScheduledTimestamp
      *
      * @return string
      */
@@ -43,7 +43,7 @@ class CommandCreator extends \Aurora\System\Db\AbstractCommandCreator
      * @param int $iAccountID
      * @param string $sFolderFullName
      * @param string $sMessageUid
-     * @param string $sDeviceId
+     * @param int $iScheduledTimestamp
      *
      * @return string
      */
@@ -62,7 +62,9 @@ class CommandCreator extends \Aurora\System\Db\AbstractCommandCreator
     }
 
     /**
-     * @param string $sDeviceId
+     * @param int $iAccountID
+     * @param string $sFolderFullName
+     * @param string $sMessageUid
      *
      * @return string
      */

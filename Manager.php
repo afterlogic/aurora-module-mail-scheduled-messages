@@ -14,6 +14,11 @@ namespace Aurora\Modules\MailScheduledMessages;
  */
 class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
 {
+    /**
+     * @var Storages\Db\Storage
+     */
+    public $oStorage;
+
     public function __construct(\Aurora\System\Module\AbstractModule $oModule = null)
     {
         parent::__construct($oModule, new Storages\Db\Storage($this));
@@ -32,7 +37,7 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
      * @param int $iAccountID
      * @param string $sFolderFullName
      * @param string $sMessageUid
-     * @param string $sDeviceId
+     * @param int $iTimestamp
      *
      * @return bool
      */
