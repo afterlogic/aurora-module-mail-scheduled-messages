@@ -12,6 +12,8 @@ namespace Aurora\Modules\MailScheduledMessages;
  * @license https://afterlogic.com/products/common-licensing Afterlogic Software License
  * @copyright Copyright (c) 2023, Afterlogic Corp.
  *
+ * @property Settings $oModuleSettings
+ *
  * @package Modules
  */
 class Module extends \Aurora\System\Module\AbstractModule
@@ -174,7 +176,7 @@ class Module extends \Aurora\System\Module\AbstractModule
     {
         return [
             'ScheduledFolderName' => $this->sScheduledFolderName,
-            'PredefinedSchedule' => $this->getConfig('PredefinedSchedule', [])
+            'PredefinedSchedule' => $this->oModuleSettings->PredefinedSchedule
         ];
     }
 
