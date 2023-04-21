@@ -163,9 +163,9 @@ function sendMessage($oAccount, $rStream)
             $oServer = null;
             try {
                 $oSettings =& \Aurora\System\Api::GetSettings();
-                $iConnectTimeOut = $oSettings->GetValue('SocketConnectTimeoutSeconds', 5);
-                $iSocketTimeOut = $oSettings->GetValue('SocketGetTimeoutSeconds', 5);
-                $bVerifySsl = !!$oSettings->GetValue('SocketVerifySsl', false);
+                $iConnectTimeOut = $oSettings->SocketConnectTimeoutSeconds;
+                $iSocketTimeOut = $oSettings->SocketGetTimeoutSeconds;
+                $bVerifySsl = !!$oSettings->SocketVerifySsl;
 
                 $oSmtpClient = \MailSo\Smtp\SmtpClient::NewInstance();
                 $oSmtpClient->SetTimeOuts($iConnectTimeOut, $iSocketTimeOut);
