@@ -17,38 +17,41 @@ $oMailScheduledMessagesModule = \Aurora\Modules\MailScheduledMessages\Module::De
 $oMailModule = \Aurora\Modules\Mail\Module::getInstance();
 
 $iTime = time();
+$aMessagesForSend = [];
 
-$aMessagesForSend = $oMailScheduledMessagesModule->GetMessagesForSend($iTime);
-foreach ($aMessagesForSend as $aMessageForSend) {
-    $mSendResult = false;
-    $directMessageToStreamResult = false;
-    $oAccount = $oMailModule->GetAccount($aMessageForSend['AccountId']);
+if ($oMailScheduledMessagesModule) {
+    $aMessagesForSend = $oMailScheduledMessagesModule->GetMessagesForSend($iTime);
+    foreach ($aMessagesForSend as $aMessageForSend) {
+        $mSendResult = false;
+        $directMessageToStreamResult = false;
+        $oAccount = $oMailModule->GetAccount($aMessageForSend['AccountId']);
 
-    try {
-        $directMessageToStreamResult = $oMailModule->getMailManager()->directMessageToStream(
-            $oAccount,
-            function ($rMessageResourse, $sContentType, $sFileName, $sMimeIndex = '') use ($oAccount, &$mSendResult) {
-                if (\is_resource($rMessageResourse)) {
-                    $mSendResult = sendMessage($oAccount, $rMessageResourse);
-                    \fclose($rMessageResourse);
-                }
-            },
-            $aMessageForSend['FolderFullName'],
-            $aMessageForSend['MessageUid']
-        );
-    } catch (\Exception $oEx) {
-        \Aurora\System\Api::LogException($oEx);
-    }
+        try {
+            $directMessageToStreamResult = $oMailModule->getMailManager()->directMessageToStream(
+                $oAccount,
+                function ($rMessageResourse, $sContentType, $sFileName, $sMimeIndex = '') use ($oAccount, &$mSendResult) {
+                    if (\is_resource($rMessageResourse)) {
+                        $mSendResult = sendMessage($oAccount, $rMessageResourse);
+                        \fclose($rMessageResourse);
+                    }
+                },
+                $aMessageForSend['FolderFullName'],
+                $aMessageForSend['MessageUid']
+            );
+        } catch (\Exception $oEx) {
+            \Aurora\System\Api::LogException($oEx);
+        }
 
-    if ($directMessageToStreamResult && $mSendResult) {
-        $oNamespace = \Aurora\Modules\Mail\Module::getInstance()->getMailManager()->getFoldersNamespace($oAccount);
-        $sNamespace = $oNamespace ? $oNamespace->GetPersonalNamespace() : '';
-        $sSentFolderFullName = $sNamespace . 'Sent';
+        if ($directMessageToStreamResult && $mSendResult) {
+            $oNamespace = \Aurora\Modules\Mail\Module::getInstance()->getMailManager()->getFoldersNamespace($oAccount);
+            $sNamespace = $oNamespace ? $oNamespace->GetPersonalNamespace() : '';
+            $sSentFolderFullName = $sNamespace . 'Sent';
 
-        \Aurora\Modules\Mail\Module::Decorator()->MoveMessages($aMessageForSend['AccountId'], $aMessageForSend['FolderFullName'], $sSentFolderFullName, $aMessageForSend['MessageUid']);
-        $oMailScheduledMessagesModule->RemoveMessage($aMessageForSend['AccountId'], $aMessageForSend['FolderFullName'], $aMessageForSend['MessageUid']);
-    } else {
-        //		$oMailScheduledMessagesModule->RemoveMessage($aMessageForSend['AccountId'], $aMessageForSend['FolderFullName'], $aMessageForSend['MessageUid']);
+            \Aurora\Modules\Mail\Module::Decorator()->MoveMessages($aMessageForSend['AccountId'], $aMessageForSend['FolderFullName'], $sSentFolderFullName, $aMessageForSend['MessageUid']);
+            $oMailScheduledMessagesModule->RemoveMessage($aMessageForSend['AccountId'], $aMessageForSend['FolderFullName'], $aMessageForSend['MessageUid']);
+        } else {
+            //		$oMailScheduledMessagesModule->RemoveMessage($aMessageForSend['AccountId'], $aMessageForSend['FolderFullName'], $aMessageForSend['MessageUid']);
+        }
     }
 }
 
