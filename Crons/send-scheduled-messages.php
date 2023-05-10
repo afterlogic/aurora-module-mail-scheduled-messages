@@ -2,16 +2,15 @@
 
 use Aurora\System\EventEmitter;
 
+if (PHP_SAPI !== 'cli') {
+    exit("Use the console for running this script");
+}
+
 require_once __DIR__ . "/../../../system/autoload.php";
 
 \Aurora\System\Api::Init(true);
 set_time_limit(0);
 date_default_timezone_set("UTC");
-
-// if (PHP_SAPI !== 'cli')
-// {
-// exit("Use the console for running this script");
-// }
 
 $oMailScheduledMessagesModule = \Aurora\Modules\MailScheduledMessages\Module::Decorator();
 $oMailModule = \Aurora\Modules\Mail\Module::getInstance();
