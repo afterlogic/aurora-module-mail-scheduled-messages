@@ -14,16 +14,11 @@ namespace Aurora\Modules\MailScheduledMessages;
  *
  * @property Module $oModule
  */
-class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
+class Manager extends \Aurora\System\Managers\AbstractManager
 {
-    /**
-     * @var Storages\Db\Storage
-     */
-    public $oStorage;
-
     public function __construct(\Aurora\System\Module\AbstractModule $oModule = null)
     {
-        parent::__construct($oModule, new Storages\Db\Storage($this));
+        parent::__construct($oModule);
     }
 
     /**
@@ -31,8 +26,17 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
      */
     public function getMessagesForSend($iTimestamp)
     {
-        $aMessagesForSend = $this->oStorage->getMessagesForSend($iTimestamp);
-        return $aMessagesForSend;
+        return Models\Message::where('schedule_timestamp', '<', $iTimestamp)
+             ->orderBy('schedule_timestamp')
+             ->get()
+             ->map(function ($message) {
+                 return [
+                     'AccountId' => (int) $message->account_id,
+                     'FolderFullName' => $message->folder_full_name,
+                     'MessageUid' => $message->message_uid,
+                     'ScheduleTimestamp' => (int) $message->schedule_timestamp
+                 ];
+             });
     }
 
     /**
@@ -45,83 +49,46 @@ class Manager extends \Aurora\System\Managers\AbstractManagerWithStorage
      */
     public function addMessage($iAccountID, $sFolderFullName, $sMessageUid, $iTimestamp)
     {
-        return $this->oStorage->addMessage($iAccountID, $sFolderFullName, $sMessageUid, $iTimestamp);
+        return Models\Message::create([
+            'account_id' => $iAccountID,
+            'folder_full_name' => $sFolderFullName,
+            'message_uid' => $sMessageUid,
+            'schedule_timestamp' => $iTimestamp
+        ]);
     }
 
     public function updateMessageScheduleTimestamp($iAccountID, $sFolderFullName, $sMessageUid, $iTimestamp)
     {
-        return $this->oStorage->updateMessageScheduleTimestamp($iAccountID, $sFolderFullName, $sMessageUid, $iTimestamp);
+        return Models\Message::where('account_id', $iAccountID)
+            ->where('folder_full_name', $sFolderFullName)
+            ->where('message_uid', $sMessageUid)
+            ->update(['schedule_timestamp' => $iTimestamp]);
     }
 
     public function getMessage($iAccountID, $sFolderFullName, $sMessageUid)
     {
-        return $this->oStorage->getMessage($iAccountID, $sFolderFullName, $sMessageUid);
+        $mResult = false;
+
+        $message = Models\Message::where('account_id', $iAccountID)
+            ->where('folder_full_name', $sFolderFullName)
+            ->where('message_uid', $sMessageUid)
+            ->first();
+        if ($message) {
+            $mResult = [
+                'AccountId' => (int) $message->account_id,
+                'FolderFullName' => $message->folder_full_name,
+                'MessageUid' => $message->message_uid,
+                'ScheduleTimestamp' => (int) $message->schedule_timestamp
+            ];
+        }
+        return $mResult;
     }
 
     public function removeMessage($iAccountID, $sFolderFullName, $sMessageUid)
     {
-        return $this->oStorage->removeMessage($iAccountID, $sFolderFullName, $sMessageUid);
-    }
-
-    /**
-     * Creates tables required for module work by executing create.sql file.
-     *
-     * @return boolean
-     */
-    public function createTablesFromFile()
-    {
-        $bResult = false;
-
-        try {
-            $sFilePath = dirname(__FILE__) . '/Storages/Db/sql/create.sql';
-            $bResult = \Aurora\System\Managers\Db::getInstance()->executeSqlFile($sFilePath);
-        } catch (\Aurora\System\Exceptions\BaseException $oException) {
-            $this->setLastException($oException);
-        }
-
-        return $bResult;
-    }
-
-    /**
-     * Temp.
-     *
-     * @return boolean
-     */
-    public function insertDataFromFile()
-    {
-        $bResult = false;
-
-        try {
-            $sFilePath = dirname(__FILE__) . '/Storages/Db/sql/insert.sql';
-            $bResult = \Aurora\System\Managers\Db::getInstance()->executeSqlFile($sFilePath);
-        } catch (\Aurora\System\Exceptions\BaseException $oException) {
-            $this->setLastException($oException);
-        }
-
-        return $bResult;
-    }
-
-    /**
-     * Update tables required for module work by executing update.sql file.
-     *
-     * @return boolean
-     */
-    public function updateTables()
-    {
-        return true;
-
-        //		$bResult = false;
-//
-        //		try
-        //		{
-        //			$sFilePath = dirname(__FILE__) . '/Storages/Db/sql/update.sql';
-        //			$bResult = \Aurora\System\Managers\Db::getInstance()->executeSqlFile($sFilePath);
-        //		}
-        //		catch (\Aurora\System\Exceptions\BaseException $oException)
-        //		{
-        //			$this->setLastException($oException);
-        //		}
-//
-        //		return $bResult;
+        return Models\Message::where('account_id', $iAccountID)
+            ->where('folder_full_name', $sFolderFullName)
+            ->where('message_uid', $sMessageUid)
+            ->delete();
     }
 }
