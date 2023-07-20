@@ -91,4 +91,9 @@ class Manager extends \Aurora\System\Managers\AbstractManager
             ->where('message_uid', $sMessageUid)
             ->delete();
     }
+
+    public function removeAccountMessages($iAccountID)
+    {
+        return Models\Message::where('account_id', $iAccountID)->delete();
+    }
 }

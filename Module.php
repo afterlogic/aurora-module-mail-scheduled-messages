@@ -20,6 +20,9 @@ class Module extends \Aurora\System\Module\AbstractModule
 {
     protected $aRequireModules = ['Mail'];
 
+    /**
+     * @var Manager
+     */
     public $oManager = null;
 
     public $sScheduledFolderName = 'Scheduled';
@@ -61,7 +64,7 @@ class Module extends \Aurora\System\Module\AbstractModule
         $this->subscribeEvent('Mail::GetMessage::after', array($this, 'onAfterGetMessage'));
         $this->subscribeEvent('Mail::MoveMessages::after', array($this, 'onMoveOrDeleteMessages'));
         $this->subscribeEvent('Mail::DeleteMessages::after', array($this, 'onMoveOrDeleteMessages'));
-        $this->subscribeEvent('Core::CreateTables::after', array($this, 'onAfterCreateTables'));
+        $this->subscribeEvent('Mail::DeleteAccount::after', array($this, 'onAfterDeleteAccount'));
 
         $this->denyMethodsCallByWebApi([
             'GetMessagesForSend',
@@ -159,23 +162,11 @@ class Module extends \Aurora\System\Module\AbstractModule
             }
         }
     }
-
-    /**
-     * Creates tables required for module work. Called by event subscribe.
-     *
-     * @ignore
-     * @param array $aParams Parameters
-     */
-    public function onAfterCreateTables($aParams, &$mResult)
+    public function onAfterDeleteAccount($aArgs, &$mResult)
     {
-        // if ($mResult)
-        // {
-        // 	$mResult = $this->oManager->createTablesFromFile();
-        // 	if ($mResult)
-        // 	{
-        // 		$mResult = $this->oManager->updateTables();
-        // 	}
-        // }
+        if ($mResult) {
+            $this->oManager->removeAccountMessages($aArgs['AccountID']);
+        }   
     }
 
     public function GetSettings()
