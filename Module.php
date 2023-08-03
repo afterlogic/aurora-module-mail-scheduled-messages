@@ -166,7 +166,7 @@ class Module extends \Aurora\System\Module\AbstractModule
     {
         if ($mResult) {
             $this->oManager->removeAccountMessages($aArgs['AccountID']);
-        }   
+        }
     }
 
     public function GetSettings()
