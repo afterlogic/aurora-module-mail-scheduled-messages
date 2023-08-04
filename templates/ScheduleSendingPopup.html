@@ -24,7 +24,7 @@
 					<input class="input input_date" type="text" spellcheck="false" readonly="readonly" data-bind="initDom: dateDom"/>
 				</div>
 				<div class="custom_selector" style="max-width: 100px;"
-						data-bind="customSelect: {'control': false, 'selected': 'selected', 'input': true, 'options': timeOptions(), 'timeOptions': timeOptions, value: selectedTime, optionsText: 'text', optionsValue: 'value'}">
+						data-bind="customSelect: {'control': false, 'input': true, 'options': timeOptions, value: selectedTime}">
                     <input class="input input_time" spellcheck="false" type="text"
                            data-bind="value: selectedTime"/>
                     <span class="dropdown">
