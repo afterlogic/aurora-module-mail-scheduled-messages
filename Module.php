@@ -102,16 +102,16 @@ class Module extends \Aurora\System\Module\AbstractModule
 
     public function onAfterGetFolders(&$aArgs, &$mResult)
     {
-        $oFolderCollection =& $mResult['Folders'];
+        $oFolderCollection = &$mResult['Folders'];
 
-        $aList =& $oFolderCollection->GetAsArray();
+        $aList = &$oFolderCollection->GetAsArray();
         $iSentPos = 0;
         $sNamespace = $oFolderCollection->getNamespace();
         if (!empty($sNamespace)) {
             $sNamespaceFolderName = substr($sNamespace, 0, -1);
-            $oNamespaceFolder =& $oFolderCollection->getFolder($sNamespaceFolderName, true);
+            $oNamespaceFolder = &$oFolderCollection->getFolder($sNamespaceFolderName, true);
             if ($oNamespaceFolder) {
-                $aList =& $oNamespaceFolder->getSubFolders()->GetAsArray();
+                $aList = &$oNamespaceFolder->getSubFolders()->GetAsArray();
             }
         }
 

@@ -115,7 +115,7 @@ function getHeaders($rResource)
             if ('=?' === \substr($sHeadersValue, 0, 2)) {
                 $sValue .= $sHeadersValue;
             } else {
-                $sValue .= "\n".$sHeadersValue;
+                $sValue .= "\n" . $sHeadersValue;
             }
         } else {
             if (null !== $sName) {
@@ -159,7 +159,7 @@ function sendMessage($oAccount, $rStream)
     );
 
     $oMailModule = \Aurora\Modules\Mail\Module::getInstance();
-    $oImapClient =& $oMailModule->getMailManager()->_getImapClient($oAccount);
+    $oImapClient = &$oMailModule->getMailManager()->_getImapClient($oAccount);
 
     $mResult = false;
     if (is_resource($rMessageStream)) {
@@ -169,7 +169,7 @@ function sendMessage($oAccount, $rStream)
         if ($oRcpt && 0 < $oRcpt->Count()) {
             $oServer = null;
             try {
-                $oSettings =& \Aurora\System\Api::GetSettings();
+                $oSettings = &\Aurora\System\Api::GetSettings();
                 $iConnectTimeOut = $oSettings->SocketConnectTimeoutSeconds;
                 $iSocketTimeOut = $oSettings->SocketGetTimeoutSeconds;
                 $bVerifySsl = !!$oSettings->SocketVerifySsl;
@@ -200,7 +200,7 @@ function sendMessage($oAccount, $rStream)
 
                 $oSmtpClient->MailFrom($oAccount->Email);
 
-                $aRcpt =& $oRcpt->GetAsArray();
+                $aRcpt = &$oRcpt->GetAsArray();
 
                 foreach ($aRcpt as /* @var $oEmail \MailSo\Mime\Email */ $oEmail) {
                     $sRcptEmail = $oEmail->GetEmail();
