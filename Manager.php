@@ -49,7 +49,7 @@ class Manager extends \Aurora\System\Managers\AbstractManager
      */
     public function addMessage($iAccountID, $sFolderFullName, $sMessageUid, $iTimestamp)
     {
-        return Models\Message::create([
+        return Models\Message::query()->create([
             'account_id' => $iAccountID,
             'folder_full_name' => $sFolderFullName,
             'message_uid' => $sMessageUid,
