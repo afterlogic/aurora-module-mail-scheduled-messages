@@ -47,9 +47,18 @@ if ($oMailScheduledMessagesModule) {
         }
 
         if ($directMessageToStreamResult && $mSendResult) {
+            $aFolders = $oMailModule->getMailManager()->getFolders($oAccount);
+            $sSentFolder = '';
+            $aFolders->foreachWithSubFolders(function ($oFolder) use (&$sSentFolder) {
+                if ($oFolder->getType() == \Aurora\Modules\Mail\Enums\FolderType::Sent) {
+                    $sSentFolder = $oFolder->getRawFullName();
+                    return;
+                }
+            });
+            
             $oNamespace = \Aurora\Modules\Mail\Module::getInstance()->getMailManager()->getFoldersNamespace($oAccount);
             $sNamespace = $oNamespace ? $oNamespace->GetPersonalNamespace() : '';
-            $sSentFolderFullName = $sNamespace . 'Sent';
+            $sSentFolderFullName = $sNamespace . $sSentFolder;
 
             \Aurora\Modules\Mail\Module::Decorator()->MoveMessages($aMessageForSend['AccountId'], $aMessageForSend['FolderFullName'], $sSentFolderFullName, $aMessageForSend['MessageUid']);
             $oMailScheduledMessagesModule->RemoveMessage($aMessageForSend['AccountId'], $aMessageForSend['FolderFullName'], $aMessageForSend['MessageUid']);
