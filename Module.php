@@ -90,8 +90,8 @@ class Module extends \Aurora\System\Module\AbstractModule
         $oAccount = $this->oMailModuleAccountsManager->getAccountById($iAccountID);
         if ($oAccount) {
             $sScheduledFolderFullName = $this->getScheduledFolderFullName($oAccount);
-            $aResult = $this->oMailModuleMailManager->getFolderListInformation($oAccount, array($sScheduledFolderFullName), false);
-            if (empty($aResult)) {
+            $aResult = \Aurora\Modules\Mail\Module::Decorator()->GetRelevantFoldersInformation($iAccountID, array($sScheduledFolderFullName), false);
+            if (empty($aResult['Counts'])) {
                 try {
                     \Aurora\Modules\Mail\Module::Decorator()->CreateFolder($iAccountID, $sScheduledFolderFullName, '', '/');
                 } catch (\Exception $oException) {

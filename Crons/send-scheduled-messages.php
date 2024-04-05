@@ -55,7 +55,7 @@ if ($oMailScheduledMessagesModule) {
                     return;
                 }
             });
-            
+
             $oNamespace = \Aurora\Modules\Mail\Module::getInstance()->getMailManager()->getFoldersNamespace($oAccount);
             $sNamespace = $oNamespace ? $oNamespace->GetPersonalNamespace() : '';
             $sSentFolderFullName = $sNamespace . $sSentFolder;
