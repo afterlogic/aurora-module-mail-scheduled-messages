@@ -8,7 +8,7 @@
 use Aurora\System\EventEmitter;
 
 if (PHP_SAPI !== 'cli') {
-    // exit("Use the console for running this script");
+    exit("Use the console for running this script");
 }
 
 require_once \dirname(__file__) . "/../../../system/autoload.php";
