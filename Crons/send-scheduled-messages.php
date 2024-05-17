@@ -8,7 +8,7 @@
 use Aurora\System\EventEmitter;
 
 if (PHP_SAPI !== 'cli') {
-    exit("Use the console for running this script");
+    // exit("Use the console for running this script");
 }
 
 require_once \dirname(__file__) . "/../../../system/autoload.php";
@@ -56,11 +56,9 @@ if ($oMailScheduledMessagesModule) {
                 }
             });
 
-            $oNamespace = \Aurora\Modules\Mail\Module::getInstance()->getMailManager()->getFoldersNamespace($oAccount);
-            $sNamespace = $oNamespace ? $oNamespace->GetPersonalNamespace() : '';
-            $sSentFolderFullName = $sNamespace . $sSentFolder;
-
-            \Aurora\Modules\Mail\Module::Decorator()->MoveMessages($aMessageForSend['AccountId'], $aMessageForSend['FolderFullName'], $sSentFolderFullName, $aMessageForSend['MessageUid']);
+            if (!empty($sSentFolder)) {
+                \Aurora\Modules\Mail\Module::Decorator()->MoveMessages($aMessageForSend['AccountId'], $aMessageForSend['FolderFullName'], $sSentFolder, $aMessageForSend['MessageUid']);
+            }
             $oMailScheduledMessagesModule->RemoveMessage($aMessageForSend['AccountId'], $aMessageForSend['FolderFullName'], $aMessageForSend['MessageUid']);
         } else {
             //		$oMailScheduledMessagesModule->RemoveMessage($aMessageForSend['AccountId'], $aMessageForSend['FolderFullName'], $aMessageForSend['MessageUid']);
