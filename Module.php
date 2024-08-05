@@ -205,7 +205,7 @@ class Module extends \Aurora\System\Module\AbstractModule
 
         $oAccount = $this->oMailModuleAccountsManager->getAccountById($AccountID);
 
-        \Aurora\Modules\Mail\Module::checkAccess($oAccount);
+        \Aurora\Modules\Mail\Module::checkAccountAccess($oAccount);
 
         $oIdentity = $IdentityID !== 0 ? \Aurora\Modules\Mail\Module::getInstance()->getIdentitiesManager()->getIdentity($IdentityID, $AccountID) : null;
         $oMessage = \Aurora\Modules\Mail\Module::Decorator()->BuildMessage(
