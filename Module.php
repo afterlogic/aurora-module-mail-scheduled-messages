@@ -171,6 +171,8 @@ class Module extends \Aurora\System\Module\AbstractModule
 
     public function GetSettings()
     {
+        \Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::NormalUser);
+
         return [
             'ScheduledFolderName' => $this->sScheduledFolderName,
             'PredefinedSchedule' => $this->oModuleSettings->PredefinedSchedule
