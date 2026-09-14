@@ -88,6 +88,50 @@ function getRcpt($aHeaders)
     return $oResult->Unique();
 }
 
+/**
+ * Copies $rSourceStream into a new memory stream with the given header (and any of its folded
+ * continuation lines) removed, leaving every other header and the body byte-for-byte unchanged.
+ * Used to keep Bcc out of the message actually transmitted over SMTP, while still letting Bcc
+ * recipients be resolved from the stored message's headers (see getRcpt()/getHeaders() above).
+ *
+ * @param resource $rSourceStream Must be positioned at the start of the message.
+ * @param string $sHeaderName
+ *
+ * @return resource A new, rewound memory stream.
+ */
+function removeHeaderFromStream($rSourceStream, $sHeaderName)
+{
+    $rResult = \MailSo\Base\ResourceRegistry::CreateMemoryResource();
+    $sPrefix = $sHeaderName . ':';
+
+    $bSkippingContinuation = false;
+    while (($sLine = fgets($rSourceStream)) !== false) {
+        if (trim($sLine) === '') {
+            fwrite($rResult, $sLine);
+            break;
+        }
+
+        $sFirstChar = substr($sLine, 0, 1);
+        if ($sFirstChar === ' ' || $sFirstChar === "\t") {
+            if ($bSkippingContinuation) {
+                continue;
+            }
+        } else {
+            $bSkippingContinuation = (0 === strncasecmp($sLine, $sPrefix, strlen($sPrefix)));
+            if ($bSkippingContinuation) {
+                continue;
+            }
+        }
+
+        fwrite($rResult, $sLine);
+    }
+
+    stream_copy_to_stream($rSourceStream, $rResult);
+
+    rewind($rResult);
+    return $rResult;
+}
+
 function getHeaders($rResource)
 {
     $sRawHeaders = '';
@@ -225,7 +269,9 @@ function sendMessage($oAccount, $rStream)
                 }
 
                 \rewind($rMessageStream);
-                $oSmtpClient->DataWithStream($rMessageStream);
+                $rDataStream = removeHeaderFromStream($rMessageStream, 'Bcc');
+                $oSmtpClient->DataWithStream($rDataStream);
+                \fclose($rDataStream);
 
                 $oSmtpClient->LogoutAndDisconnect();
                 \fclose($rMessageStream);

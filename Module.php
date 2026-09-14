@@ -226,7 +226,12 @@ class Module extends \Aurora\System\Module\AbstractModule
         if ($oMessage) {
             $oMessage->SetDate($ScheduleDateTime);
             $rMessageStream = \MailSo\Base\ResourceRegistry::CreateMemoryResource();
-            $iMessageStreamSize = \MailSo\Base\Utils::MultipleStreamWriter($oMessage->ToStream(true), array($rMessageStream), 8192, true, true, true);
+            // Bcc is intentionally kept here (unlike the immediate-send path, which strips it from
+            // the stream it hands to the SMTP server). The scheduled-send cron re-derives its
+            // recipient list purely by re-parsing the stored message's headers, so if Bcc isn't
+            // in there, the Bcc recipient silently never gets the message. The cron strips the
+            // Bcc header from what actually goes out over SMTP, so this doesn't leak it to anyone.
+            $iMessageStreamSize = \MailSo\Base\Utils::MultipleStreamWriter($oMessage->ToStream(false), array($rMessageStream), 8192, true, true, true);
 
             $FolderFullName = $this->getScheduledFolderFullName($oAccount);
             $this->oMailModuleMailManager->appendMessageFromStream($oAccount, $rMessageStream, $FolderFullName, $iMessageStreamSize, $iNewUid);
